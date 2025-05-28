@@ -2,7 +2,7 @@
 Contains 4 files that aneble the impelementation of the Paraflow method in the library [deepXDE](https://github.com/lululxvi/deepxde).
 To make it work:
 - Clone the [deepXDE repository](https://github.com/lululxvi/deepxde)
-- move this for files in their locations with this commands and in case replace the existing file:
+- move this 4 files in their locations with this commands and in case replace the existing file:
   ```bash
   mv Poisson_Neumann_1d.py deepxde
   mv paraflow.py deepxde/deepxde/optimizers/pytorch/
