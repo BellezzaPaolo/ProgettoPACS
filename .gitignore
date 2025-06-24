@@ -4,5 +4,7 @@ main
 *.vscode
 .vscode/
 *.json
+*.dat
 
 build/
+deepxde/
