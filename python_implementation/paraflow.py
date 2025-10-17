@@ -9,6 +9,30 @@ import copy
 
 
 class paraflow(Optimizer):
+    """Implementation of ParaflowS optimizer. It's based on two operators: a coarse
+    solver and a fine solver. The coarse solver makes large steps to quickly
+    approach the minimum, while the fine solver makes small steps to refine the
+    solution. The optimizer alternates between these two solvers to efficiently
+    minimize the loss function.
+
+    Args:
+        params (iterable): iterable of parameters to optimize or dicts defining parameter groups
+        lr_coarse (float, optional): learning rate of coarse solver (default: 1e-3)
+        n_fine (int, optional): number of fine steps per iteration (default: 100)
+        n_coarse (int, optional): maximum number of coarse steps per iteration (default: 200)
+        momentum (float, optional): momentum factor (default: 0)
+        dampening (float, optional): dampening for momentum (default: 0)
+        weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
+        nesterov (bool, optional): enables Nesterov momentum (default: False)
+        maximize (bool, optional): maximize the params based on the objective, instead of minimizing (default: False)
+        foreach (bool, optional): whether to use foreach optimizations (default: None)
+        differentiable (bool, optional): whether to record operations on the optimization step for higher order gradients (default: False)
+        fused (bool, optional): whether to use fused optimizations (default: None)
+        verbose (bool, optional): verbosity (default: False)
+
+        NOTE: The step of both and fine solvers is based on the standard GD optimizer. So by now doesn't support momentum, weight decay and nesterov.
+        NOTE: n_fine is fixed as 1/lr_coarse in the optimizer.py file
+    """
     def __init__(self,
                  params: Iterable[Tensor],
                  lr_coarse: Union[float, Tensor] = 1e-3,
@@ -18,11 +42,12 @@ class paraflow(Optimizer):
                  dampening: float = 0,
                  weight_decay: float = 0,
                  nesterov: bool = False,
-                 *,
+                 *,                     # python syntax to force the use of keywords after this
                  maximize: bool = False,
                  foreach: Optional[bool] = None,
                  differentiable: bool = False,
-                 fused: Optional[bool] = None):
+                 fused: Optional[bool] = None,
+                 verbose: bool = False):
         
         defaults = dict(
             lr_fine = lr_coarse / n_fine,
@@ -43,6 +68,7 @@ class paraflow(Optimizer):
         self.n_fine = n_fine
         self.lr_coarse = lr_coarse
         self.n_coarse = n_coarse
+        self.verbose = verbose
 
         super(paraflow,self).__init__(params, defaults)
 
@@ -83,6 +109,10 @@ class paraflow(Optimizer):
             else:
                 loss_fine = loss_coarse
                 i += 1
+
+        # verbose print
+        if self.verbose:
+            print(f'ParaflowS iteration {i}, loss: {loss_fine}')
 
         return loss_fine
 

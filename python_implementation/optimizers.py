@@ -49,7 +49,7 @@ def get(params, optimizer, learning_rate=None, decay=None, weight_decay=0):
             verbose=NNCG_options["verbose"],
         )
     elif optimizer == "paraflow":
-        optim = paraflow(params, learning_rate, n_fine = 100)
+        optim = paraflow(params, learning_rate, n_fine = 1/learning_rate)
     else:
         if learning_rate is None:
             raise ValueError("No learning rate for {}.".format(optimizer))
