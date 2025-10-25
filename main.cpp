@@ -8,24 +8,20 @@ namespace py = pybind11;
 
 int main(){
     py::scoped_interpreter guard{}; // start the interpreter and keep it alive
-
     py::module_ sys = py::module_::import("sys");
     // py::print(sys.attr("path"));
-    sys.attr("path").attr("append")("/home/paolo/Desktop/ProgettoPACS"); // add to the working directory to reach pde.py
+    sys.attr("path").attr("append")("/home/paolo/Desktop/ProgettoPACS"); // add to the working directory to reach problem_settings.py
     // py::print(sys.attr("path"));
-    // py::module_ dde = py::module_::import("deepxde"); //import deepxde
-    // py::module_ problem_settings = py::module_::import("problem_settings"); // import problem informations like domain, pde, bc,...
-    std::cout << "Python executable: " 
-            << py::module_::import("sys").attr("executable").cast<std::string>() 
-            << std::endl;
+    py::module_ dde = py::module_::import("deepxde"); //import deepxde
+    py::module_ problem_settings = py::module_::import("problem_settings"); // import problem informations like domain, pde, bc,...
 
-    // // geometry
-    // py::object geom = dde.attr("geometry").attr("Interval")(problem_settings.attr("a"), problem_settings.attr("b"));
+    // geometry
+    py::object geom = dde.attr("geometry").attr("Interval")(problem_settings.attr("a"), problem_settings.attr("b"));
 
-    // // boundary conditions
-    // py::list bc_list;
-    // bc_list.append( dde.attr("icbc").attr("DirichletBC")(geom, problem_settings.attr("func_l"), problem_settings.attr("boundary_l")));
-    // bc_list.append( dde.attr("icbc").attr("NeumannBC")(geom, problem_settings.attr("func_r"),problem_settings.attr("boundary_r")));
+    // boundary conditions
+    py::list bc_list;
+    bc_list.append( dde.attr("icbc").attr("DirichletBC")(geom, problem_settings.attr("func_l"), problem_settings.attr("boundary_l")));
+    bc_list.append( dde.attr("icbc").attr("NeumannBC")(geom, problem_settings.attr("func_r"),problem_settings.attr("boundary_r")));
 
     // // collect all pde data into a single class
     // py::object data = dde.attr("data").attr("PDE")(geom, problem_settings.attr("pde"), bc_list, 16, 2, py::arg("solution") = problem_settings.attr("func_ex"), py::arg("num_test") = 100);
