@@ -6,7 +6,7 @@ from torch import Tensor
 from typing import Union
 from typing import Iterable
 import copy
-
+from deepxde import globals
 
 class paraflow(Optimizer):
     """Implementation of ParaflowS optimizer. It's based on two operators: a coarse
@@ -31,18 +31,17 @@ class paraflow(Optimizer):
         verbose (bool, optional): verbosity (default: False)
 
         NOTE: The step of both and fine solvers is based on the standard GD optimizer. So by now doesn't support momentum, weight decay and nesterov.
-        NOTE: n_fine is fixed as 1/lr_coarse in the optimizer.py file
     """
     def __init__(self,
                  params: Iterable[Tensor],
-                 lr_coarse: Union[float, Tensor] = 1e-3,
+                 lr_fine: Union[float, Tensor] = 1e-3,
                  n_fine = 100, 
                  n_coarse = 200,
                  momentum: float = 0,
                  dampening: float = 0,
                  weight_decay: float = 0,
                  nesterov: bool = False,
-                 *,                     # python syntax to force the use of keywords after this
+                 *,
                  maximize: bool = False,
                  foreach: Optional[bool] = None,
                  differentiable: bool = False,
@@ -50,9 +49,9 @@ class paraflow(Optimizer):
                  verbose: bool = False):
         
         defaults = dict(
-            lr_fine = lr_coarse / n_fine,
+            lr_fine = lr_fine,
             n_fine = n_fine,
-            lr_coarse = lr_coarse,
+            lr_coarse = lr_fine * n_fine,
             n_coarse = n_coarse,
             momentum = momentum,
             dampening = dampening,
@@ -64,63 +63,96 @@ class paraflow(Optimizer):
             fused = fused
         )
 
-        self.lr_fine = lr_coarse / n_fine
+        self.lr_fine = lr_fine
         self.n_fine = n_fine
-        self.lr_coarse = lr_coarse
+        self.lr_coarse = lr_fine * n_fine
         self.n_coarse = n_coarse
         self.verbose = verbose
 
-        super(paraflow,self).__init__(params, defaults)
 
+        super(paraflow,self).__init__(params, defaults)
+        
         for group in self.param_groups:
             for p in group['params']:
-                self.state[p] = dict(mom=torch.zeros_like(p.data))
+                # store detached clones to avoid tracking graph and aliasing
+                self.state[p] = dict(
+                    bff1=torch.zeros_like(p.data).detach(),
+                    correction=torch.zeros_like(p.data).detach(),
+                    U_coarse=torch.zeros_like(p.data).detach(),
+                )
 
         #print('initialization of the class done with parameters:\n', defaults)
 
     def step(self,closure):
         # pass coarse
-        loss_coarse, bff2 = self.coarse_solver(closure)
-        loss_coarse = loss_coarse.item()
+        loss_coarse = self.coarse_solver(closure).item()
+        # print(f'coarse loss: {loss_coarse}')
 
-        # copy the state in bff1 for the correction step
-        bff1 = safe_deepcopy(bff2)
-        
         # pass fine
         loss_fine = self.fine_solver(closure).item()
+        # print(f'after fine loss: {loss_fine}')
 
         stay = True
         i = 0
+        L = 0
         # correction cicle
-        while stay and i<= self.n_coarse:
-
+        while stay and i < self.n_coarse:
+            bool1 = 0
+            bool2 = 0
+            diff = 0.0
             for k,group in enumerate(self.param_groups):
                 for j,p in enumerate(group["params"]):
+                    if i == 0:
+                        L += 1
+                        # use detached clones to avoid unexpected aliasing
+                        # self.state[p]['U_fine'] = p.data.clone().detach()
+                        self.state[p]['correction'].copy_(p.data - self.state[p]['bff1'])
+
+                    # update parameter in-place to avoid changing the Parameter object's data pointer
+                    #else:
+                    p.data.copy_(self.state[p]['bff1'] + self.state[p]['correction'])
+
+                    # diff += torch.norm(self.state[p]['U_fine'] - p.data).item()
                     
-                    p.data = bff1[k]['params'][j] + p.data - bff2[k]['params'][j] # correction formula
+                    # use allclose for floating point comparison
+                    # if torch.allclose(self.state[p]['bff1'], self.state[p]['bff2']):
+                    #     bool2 += 1
+            # if bool1 == L:
+            #     print('ufine == data')
+            # if bool2 == L:
+                # # print('bff1 == bff2')
 
+            # print(f'iter {i} | U_fine - data| = {diff}')
             # coarse pass
-            loss_coarse, bff1 = self.coarse_solver(closure)
-            loss_coarse = loss_coarse.item()
-
+            loss_coarse = self.coarse_solver(closure).item()
+            
+            #print(f'ParaflowS correction step {i}, loss: {loss_fine} --> {loss_coarse}')
             # check for the end of the cicle
-            if loss_coarse > loss_fine and i > 0:
-                stay = False
-            else:
+            if loss_coarse <= loss_fine or i == 0:
+                #print('copia')
+                for group in self.param_groups:
+                    for p in group["params"]:
+                        self.state[p]["U_coarse"] = p.data.clone().detach()
                 loss_fine = loss_coarse
                 i += 1
-
+            else:
+                #print(f'Stopping correction steps at {i} iterations')
+                globals.mean_correction_steps += (i-1)
+                for group in self.param_groups:
+                    for p in group["params"]:
+                        p.data = self.state[p]["U_coarse"].clone().detach()
+                stay = False
         # verbose print
         if self.verbose:
             print(f'ParaflowS iteration {i}, loss: {loss_fine}')
+        #print(f'final loss {loss_fine}')
 
         return loss_fine
 
     def coarse_solver(self,closure):
         loss = closure()
-
-        # copy the parameters to update without modify the class
-        param_group_copy = safe_deepcopy(self.param_groups)
+        globals.iterazione +=1
+        globals.coarse +=1
 
         for i,group in enumerate(self.param_groups):
             for j,p in enumerate(group['params']):
@@ -129,14 +161,19 @@ class paraflow(Optimizer):
                 
                 # forward pass
                 d_p = p.grad
-                param_group_copy[i]['params'][j] = param_group_copy[i]['params'][j] - group['lr_coarse'] * d_p
+                # store detached clone to avoid linking to the computational graph
+                self.state[p]['bff1'].copy_(p.data - group['lr_coarse'] * d_p)
+        #print(loss.item())
 
-        return loss, param_group_copy
+        return loss
     
+
     def fine_solver(self,closure):
         # cicle over the n_fine stpes
         for i in range(self.n_fine):
             loss = closure()
+            globals.iterazione +=1
+            globals.fine +=1
 
             for group in self.param_groups:
                 for p in group['params']:
@@ -145,17 +182,9 @@ class paraflow(Optimizer):
                     
                     # forward pass
                     d_p = p.grad
-                    p.data = p.data - group["lr_fine"] * d_p
+                    # update in-place to preserve storage and avoid creating new tensor
+                    with torch.no_grad():
+                        # p.data += (-group["lr_fine"]) * d_p
+                        p.data.add_(d_p, alpha=-group["lr_fine"])
             
         return loss
-
-def safe_deepcopy(obj):
-    if isinstance(obj, torch.Tensor):
-        # Clone tensor, break from computation graph
-        return obj.detach().clone()
-    elif isinstance(obj, dict):
-        # Recursively copy each value
-        return {k: safe_deepcopy(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        # Recursively copy list items
-        return [safe_deepcopy(v) for v in obj]

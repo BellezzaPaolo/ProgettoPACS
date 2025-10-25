@@ -11,7 +11,7 @@ def is_external_optimizer(optimizer):
     return optimizer in ["L-BFGS", "L-BFGS-B", "NNCG", "paraflow"]
 
 
-def get(params, optimizer, learning_rate=None, decay=None, weight_decay=0):
+def get(params, optimizer, learning_rate=None, decay=None, weight_decay=0, n_fine = 100):
     """Retrieves an Optimizer instance."""
     # Custom Optimizer
     if isinstance(optimizer, torch.optim.Optimizer):
@@ -49,7 +49,7 @@ def get(params, optimizer, learning_rate=None, decay=None, weight_decay=0):
             verbose=NNCG_options["verbose"],
         )
     elif optimizer == "paraflow":
-        optim = paraflow(params, learning_rate, n_fine = 1/learning_rate)
+        optim = paraflow(params, learning_rate, n_fine = n_fine)#int(1/learning_rate))
     else:
         if learning_rate is None:
             raise ValueError("No learning rate for {}.".format(optimizer))

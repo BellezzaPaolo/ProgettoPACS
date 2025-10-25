@@ -15,3 +15,8 @@ In particular:
 - model.py and optimizer.py are small modifications of the 2 existing files in the deepXDE source only to link the paraflow class with the rest of the library
   
 To make it work the requiements of deepXDE are already in the [requirements.txt](https://github.com/lululxvi/deepxde/blob/master/requirements.txt) and the backend for which has been implemented paraflow, is pytorch. So needs to be selected that backend.
+
+```bash
+cp deepxde/optimizers/pytorch/paraflow.py .
+cp deepxde/optimizers/pytorch/optimizers.py .
+cp deepxde/model.py .

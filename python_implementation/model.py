@@ -64,6 +64,7 @@ class Model:
         loss="MSE",
         metrics=None,
         decay=None,
+        n_fine = None,
         loss_weights=None,
         external_trainable_variables=None,
         verbose=1,
@@ -106,7 +107,7 @@ class Model:
                     - `InverseTimeDecay
                       <https://www.paddlepaddle.org.cn/documentation/docs/en/develop/api/paddle/optimizer/lr/InverseTimeDecay_en.html>`_:
                       ("inverse time", gamma)
-
+            n_fine (Integer): Number of fine steps per iteration (only for paraflow optimizer).
             loss_weights: A list specifying scalar coefficients (Python floats) to
                 weight the loss contributions. The loss value that will be minimized by
                 the model will then be the weighted sum of all individual losses,
@@ -142,7 +143,7 @@ class Model:
         elif backend_name == "tensorflow":
             self._compile_tensorflow(lr, loss_fn, decay)
         elif backend_name == "pytorch":
-            self._compile_pytorch(lr, loss_fn, decay)
+            self._compile_pytorch(lr, loss_fn, decay,n_fine)
         elif backend_name == "jax":
             self._compile_jax(lr, loss_fn, decay)
         elif backend_name == "paddle":
@@ -276,7 +277,7 @@ class Model:
             else train_step_tfp
         )
 
-    def _compile_pytorch(self, lr, loss_fn, decay):
+    def _compile_pytorch(self, lr, loss_fn, decay,n_fine):
         """pytorch"""
 
         l1_factor, l2_factor = 0, 0
@@ -372,6 +373,7 @@ class Model:
             learning_rate=lr,
             decay=decay,
             weight_decay=l2_factor,
+            n_fine = n_fine,
         )
 
         def train_step(inputs, targets, auxiliary_vars):
@@ -385,7 +387,7 @@ class Model:
             def closure_mixed():
                 with torch.autocast(device_type=torch.get_default_device().type, dtype=torch.float16):
                     return closure()
-
+            #print(f'size: {self.train_state.X_train.shape}')
             self.opt.step(closure if not config.mixed else closure_mixed)
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
