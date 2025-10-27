@@ -9,7 +9,4 @@ main
 
 build/
 deepxde/
-!deepxde/model.py
-!deepxde/optimizers/pytorch/optimizers.py
-!deepxde/optimizers/pytorch/paraflow.py
 __pycache__/
