@@ -32,13 +32,13 @@ activation = "tanh"
 initializer = "Glorot uniform"
 
 
-# dde.config.set_random_seed(123)
-# netP = dde.nn.FNN(layer_size, activation, initializer)
-# model = dde.Model(data, netP)
-# model.compile("paraflow", lr=1e-3, metrics=["l2 relative error"],n_fine = 100)
-# losshistory, train_state = model.train(iterations= 100, display_every= 100//10)
-# # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
-# print(f'iter: {globals.iterazione}, coarse {globals.coarse},fine:{globals.fine}')
+dde.config.set_random_seed(123)
+netP = dde.nn.FNN(layer_size, activation, initializer)
+model = dde.Model(data, netP)
+model.compile("paraflow", lr=1e-3, metrics=["l2 relative error"],n_fine = 100)
+losshistory, train_state = model.train(iterations= 1, display_every= 10//10)
+# dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+print(f'iter: {globals.iterazione}, coarse {globals.coarse},fine:{globals.fine}')
 
 
 # dde.config.set_random_seed(123)
@@ -48,40 +48,40 @@ initializer = "Glorot uniform"
 # losshistory, train_state = model.train(iterations= int(globals.iterazione),display_every=int(globals.iterazione//10))
 # # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
-learning_rate = [1e-2, 1e-3, 1e-4]
-n_fine_vec = [10, 50, 100, 500, 1000]
-iterate = 1e5
+# learning_rate = [1e-2, 1e-3, 1e-4]
+# n_fine_vec = [10, 50, 100, 500, 1000]
+# iterate = 1e5
 
-with open("test.md", "a") as f:
-        f.write(f'| Budget = {iterate} | GD |  ')
-        for nfine in n_fine_vec:
-            f.write(f' ParaflowS n_fine = {nfine} |')
-        f.write('\n|:--------------:|----:|')
-        for nfine in n_fine_vec:
-            f.write(f' :-----:|')
-        for LR in learning_rate:
+# with open("test.md", "a") as f:
+#         f.write(f'| Budget = {iterate} | GD |  ')
+#         for nfine in n_fine_vec:
+#             f.write(f' ParaflowS n_fine = {nfine} |')
+#         f.write('\n|:--------------:|----:|')
+#         for nfine in n_fine_vec:
+#             f.write(f' :-----:|')
+#         for LR in learning_rate:
             
-            dde.config.set_random_seed(123)
-            net = dde.nn.FNN(layer_size, activation, initializer)
-            model = dde.Model(data, net)
-            model.compile("sgd", lr=LR, metrics=["l2 relative error"])
-            losshistory, train_state = model.train(iterations = int(iterate),display_every=iterate//10)
-            # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
-            f.write(f'\n| lr = {LR:.3e} | {sum(losshistory.loss_train[-1]):.3e}  - {int(iterate):.3e} train loss: {train_state.best_loss_train:.2e}  test loss: {train_state.best_loss_test:.2e} test metric: {list_to_str(train_state.best_metrics):s} |')
+#             dde.config.set_random_seed(123)
+#             net = dde.nn.FNN(layer_size, activation, initializer)
+#             model = dde.Model(data, net)
+#             model.compile("sgd", lr=LR, metrics=["l2 relative error"])
+#             losshistory, train_state = model.train(iterations = int(iterate),display_every=iterate//10)
+#             # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+#             f.write(f'\n| lr = {LR:.3e} | {sum(losshistory.loss_train[-1]):.3e}  - {int(iterate):.3e} train loss: {train_state.best_loss_train:.2e}  test loss: {train_state.best_loss_test:.2e} test metric: {list_to_str(train_state.best_metrics):s} |')
 
-            for N_fine in n_fine_vec:
+#             for N_fine in n_fine_vec:
 
-                dde.config.set_random_seed(123)
-                netP = dde.nn.FNN(layer_size, activation, initializer)
-                model = dde.Model(data, netP)
-                model.compile("paraflow", lr=LR, metrics=["l2 relative error"],n_fine = N_fine)
-                losshistory, train_state = model.train(iterations = int(iterate/N_fine), display_every= int(iterate/(N_fine*10)))
-                #dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+#                 dde.config.set_random_seed(123)
+#                 netP = dde.nn.FNN(layer_size, activation, initializer)
+#                 model = dde.Model(data, netP)
+#                 model.compile("paraflow", lr=LR, metrics=["l2 relative error"],n_fine = N_fine)
+#                 losshistory, train_state = model.train(iterations = int(iterate/N_fine), display_every= int(iterate/(N_fine*10)))
+#                 #dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
-                print(f'iter: {globals.iterazione}, coarse {globals.coarse},fine:{globals.fine}, lr: {LR}, n_fine: {N_fine} {globals.mean_correction_steps/int(iterate/N_fine):.2f}')
-                f.write(f'{sum(losshistory.loss_train[-1]):.3e} -  c:{globals.coarse:.2e} f:{globals.fine:.2e} m: {globals.mean_correction_steps:.2f} train loss: {train_state.best_loss_train:.2e}  test loss: {train_state.best_loss_test:.2e} test metric: {list_to_str(train_state.best_metrics):s} |')
+#                 print(f'iter: {globals.iterazione}, coarse {globals.coarse},fine:{globals.fine}, lr: {LR}, n_fine: {N_fine} {globals.mean_correction_steps/int(iterate/N_fine):.2f}')
+#                 f.write(f'{sum(losshistory.loss_train[-1]):.3e} -  c:{globals.coarse:.2e} f:{globals.fine:.2e} m: {globals.mean_correction_steps:.2f} train loss: {train_state.best_loss_train:.2e}  test loss: {train_state.best_loss_test:.2e} test metric: {list_to_str(train_state.best_metrics):s} |')
 
-                globals.mean_correction_steps = 0
-                globals.fine = 0
-                globals.coarse = 0
-                globals.iterazione = 0
+#                 globals.mean_correction_steps = 0
+#                 globals.fine = 0
+#                 globals.coarse = 0
+#                 globals.iterazione = 0
