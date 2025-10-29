@@ -5,6 +5,7 @@ It is a simple regression problem to approximate the function exp(-x)sin(x). The
 """
                    
 import torch
+import time
 from torch import nn
 from collections import OrderedDict
 import matplotlib.pyplot as plt
@@ -13,7 +14,8 @@ from deepxde.optimizers.pytorch.paraflow import paraflow
 torch.manual_seed(12)
 
 
-def train(model, criterion, optimizer, iterations,verbose=True):
+def train(model, criterion, optimizer, budget, display_every = None, verbose=True):
+    Tstart = time.time()
     def closure():
         y_pred = model(x)
         loss = criterion(y_pred, y)
@@ -22,26 +24,37 @@ def train(model, criterion, optimizer, iterations,verbose=True):
         return loss
     
     history = []
-    for t in range(int(iterations)):
+    if hasattr(optimizer, 'budget'):
+        optimizer.budget = budget
+    
+    for t in range(budget):
         
         val_loss = optimizer.step(closure)
         if torch.is_tensor(val_loss):
             val_loss = val_loss.item()
 
         history.append(val_loss)
+        
+        if hasattr(optimizer, 'budget'):
+            if optimizer.budget <= 0:
+                break
 
         # print the behaviour
-        if t % 1000 == 0 and verbose:
+        if t % display_every == 0 and verbose:
             print(f'Iteration {t}, Loss: {val_loss:.2e}')
+
+    Tend = time.time()
+    print(f'Training time: {Tend - Tstart:.2f} seconds')
     return history
 
 def plot_results(history):
     plt.semilogy(history)
-    plt.show()
 
     x_plot = torch.linspace(0, 10, 1000).reshape(-1, 1)
     y_ex = torch.exp(-x_plot) * torch.sin(x_plot)
     y_test = model(x_plot)
+
+    plt.figure()
     plt.plot(x_plot, y_ex, 'r-', label='Exact function')
     plt.scatter(x,y, c = 'b', label='Training points')
     plt.plot(x_plot, y_test.detach().numpy(), 'g-', label='NN Prediction')
@@ -61,9 +74,11 @@ model = nn.Sequential(OrderedDict([
     ('sigmoid3', nn.Sigmoid())
 ]))
 
-criterion = torch.nn.MSELoss(reduction='sum')
-# optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
-optimizer = paraflow(model.parameters(), lr_fine=1e-2, n_fine=100)
+budget = int(1e3)
 
-history = train(model, criterion, optimizer, iterations=1e2)
+criterion = torch.nn.MSELoss(reduction='sum')
+optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
+# optimizer = paraflow(model.parameters(), lr_fine=1e-2, n_fine=100)
+
+history = train(model, criterion, optimizer, budget = budget, display_every= int(budget//100))
 plot_results(history)

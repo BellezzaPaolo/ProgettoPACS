@@ -1,9 +1,9 @@
 """Backend supported: tensorflow.compat.v1, tensorflow, pytorch, paddle"""
 import deepxde as dde
-dde.backend.set_default_backend('pytorch')
-dde.config.set_random_seed(123) 
 from deepxde import globals
 import numpy as np
+dde.backend.set_default_backend('pytorch')
+dde.config.set_random_seed(123) 
 
 # Define sine function
 sin = dde.backend.sin
@@ -31,11 +31,12 @@ layer_size = [2] + [150] * 3 + [1]
 activation = "sin"
 initializer = "Glorot uniform"
 
+budget = 1000
 
 dde.config.set_random_seed(123)
 netP = dde.nn.FNN(layer_size, activation, initializer)
 model = dde.Model(data, netP)
 model.compile("sgd", lr=1e-3, metrics=["l2 relative error"])#,n_fine = 100)
-losshistory, train_state = model.train(iterations= 50000, display_every= 5000//10)
+losshistory, train_state = model.train(iterations= budget, display_every= 5000//10, callbacks = [dde.callbacks.BudgetCallback(budget)])
 dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 print(f'iter: {globals.iterazione}, coarse {globals.coarse},fine:{globals.fine}')

@@ -5,8 +5,6 @@ from typing import Optional
 from torch import Tensor
 from typing import Union
 from typing import Iterable
-import copy
-from deepxde import globals
 
 class paraflow(Optimizer):
     """Implementation of ParaflowS optimizer. It's based on two operators: a coarse
@@ -60,7 +58,8 @@ class paraflow(Optimizer):
             maximize = maximize,
             foreach = foreach,
             differentiable = differentiable,
-            fused = fused
+            fused = fused,
+            budget = 0
         )
 
         self.lr_fine = lr_fine
@@ -68,7 +67,9 @@ class paraflow(Optimizer):
         self.lr_coarse = lr_fine * n_fine
         self.n_coarse = n_coarse
         self.verbose = verbose
+        self.budget = 0
 
+        self.counter = dict(call_coarse = 0, call_fine = 0, correction_steps = 0, iterations = 0) 
 
         super(paraflow,self).__init__(params, defaults)
         
@@ -84,6 +85,7 @@ class paraflow(Optimizer):
         #print('initialization of the class done with parameters:\n', defaults)
 
     def step(self,closure):
+        self.counter['iterations'] += 1
         # pass coarse
         loss_coarse = self.coarse_solver(closure).item()
         # print(f'coarse loss: {loss_coarse}')
@@ -96,7 +98,7 @@ class paraflow(Optimizer):
         i = 0
         L = 0
         # correction cicle
-        while stay and i < self.n_coarse:
+        while stay and i < self.n_coarse and self.budget > 0:
             bool1 = 0
             bool2 = 0
             diff = 0.0
@@ -136,8 +138,8 @@ class paraflow(Optimizer):
                 loss_fine = loss_coarse
                 i += 1
             else:
-                #print(f'Stopping correction steps at {i} iterations')
-                globals.mean_correction_steps += (i-1)
+                # print(f'Stopping correction steps at {i} iterations')
+                self.counter["correction_steps"] += i
                 for group in self.param_groups:
                     for p in group["params"]:
                         p.data = self.state[p]["U_coarse"].clone().detach()
@@ -145,14 +147,16 @@ class paraflow(Optimizer):
         # verbose print
         if self.verbose:
             print(f'ParaflowS iteration {i}, loss: {loss_fine}')
-        #print(f'final loss {loss_fine}')
 
         return loss_fine
 
     def coarse_solver(self,closure):
-        loss = closure()
-        globals.iterazione +=1
-        globals.coarse +=1
+        loss = None
+        with torch.enable_grad():
+            loss = closure()
+
+        self.budget -=1
+        self.counter['call_coarse'] += 1
 
         for i,group in enumerate(self.param_groups):
             for j,p in enumerate(group['params']):
@@ -169,11 +173,14 @@ class paraflow(Optimizer):
     
 
     def fine_solver(self,closure):
+        loss = None
+        self.budget -= self.n_fine
+        self.counter['call_fine'] += self.n_fine
+        
         # cicle over the n_fine stpes
         for i in range(self.n_fine):
-            loss = closure()
-            globals.iterazione +=1
-            globals.fine +=1
+            with torch.enable_grad():
+                loss = closure()
 
             for group in self.param_groups:
                 for p in group['params']:

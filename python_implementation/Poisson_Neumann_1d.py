@@ -1,9 +1,8 @@
 """Backend supported: tensorflow.compat.v1, tensorflow, pytorch, paddle"""
 import deepxde as dde
+import numpy as np
 dde.backend.set_default_backend('pytorch')
-dde.config.set_random_seed(123) 
-from deepxde import globals
-from deepxde.utils import list_to_str
+dde.config.set_random_seed(123)
 
 def pde(x, y):
     dy_xx = dde.grad.hessian(y, x)
@@ -21,7 +20,7 @@ def boundary_r(x, on_boundary):
 def func(x):
     return (x + 1) ** 2
 
-globals.iterazione = 0
+
 geom = dde.geometry.Interval(-1, 1)
 bc_l = dde.icbc.DirichletBC(geom, func, boundary_l)
 bc_r = dde.icbc.NeumannBC(geom, lambda X: 2 * (X + 1), boundary_r)
@@ -35,18 +34,20 @@ initializer = "Glorot uniform"
 dde.config.set_random_seed(123)
 netP = dde.nn.FNN(layer_size, activation, initializer)
 model = dde.Model(data, netP)
+
+budget = int(2e4)
+
 model.compile("paraflow", lr=1e-3, metrics=["l2 relative error"],n_fine = 100)
-losshistory, train_state = model.train(iterations= 1, display_every= 10//10)
+losshistory, train_state = model.train(iterations = budget, display_every = 5, callbacks = [dde.callbacks.BudgetCallback(budget)])
 # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
-print(f'iter: {globals.iterazione}, coarse {globals.coarse},fine:{globals.fine}')
+print(f'iter: {budget}, coarse {model.opt.counter["call_coarse"]},fine:{model.opt.counter["call_fine"]}, mean correction steps: {model.opt.counter["correction_steps"]/model.opt.counter["iterations"]:.2f} and total iterations: {model.opt.counter["iterations"]}')
 
-
-# dde.config.set_random_seed(123)
-# net = dde.nn.FNN(layer_size, activation, initializer)
-# model = dde.Model(data, net)
-# model.compile("sgd", lr=1e-3, metrics=["l2 relative error"]) # less than lr = 2e-2
-# losshistory, train_state = model.train(iterations= int(globals.iterazione),display_every=int(globals.iterazione//10))
-# # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+dde.config.set_random_seed(123)
+net = dde.nn.FNN(layer_size, activation, initializer)
+model = dde.Model(data, net)
+model.compile("sgd", lr=1e-3, metrics=["l2 relative error"]) # less than lr = 2e-2
+losshistory, train_state = model.train(iterations= budget,display_every=int(budget//10))
+# dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
 # learning_rate = [1e-2, 1e-3, 1e-4]
 # n_fine_vec = [10, 50, 100, 500, 1000]

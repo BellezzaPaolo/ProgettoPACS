@@ -1,8 +1,8 @@
 """Backend supported: tensorflow.compat.v1, tensorflow, pytorch, jax, paddle"""
 import deepxde as dde
+import numpy as np
 dde.backend.set_default_backend('pytorch')
 dde.config.set_random_seed(250) 
-import numpy as np
 
 # General parameters
 n = 2
@@ -28,7 +28,7 @@ def pde(x, y):
         dy_yy = dy_yy[0]
 
     f = k0**2 * sin(k0 * x[:, 0:1]) * sin(k0 * x[:, 1:2])
-    return -dy_xx - dy_yy - k0**2 * y - f
+    return -dy_xx - dy_yy - f
 
 
 def func(x):
@@ -80,7 +80,7 @@ if hard_constraint == True:
 model = dde.Model(data, net)
 
 if hard_constraint == True:
-    model.compile("adam", lr=learning_rate, metrics=["l2 relative error"])
+    model.compile("sgd", lr=learning_rate, metrics=["l2 relative error"])
 else:
     loss_weights = [1, weights]
     model.compile(

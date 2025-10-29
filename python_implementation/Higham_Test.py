@@ -4,13 +4,15 @@ It is a simple classification problem with 2d inputs and 2 classes. The neural n
 2 hidden layers with 3 neurons each. The activation function is the sigmoid function.
 """
 import torch
+import time
 from torch import nn
 from collections import OrderedDict
 import matplotlib.pyplot as plt
 from deepxde.optimizers.pytorch.paraflow import paraflow
 torch.manual_seed(12)
 
-def train(model, criterion, optimizer, iterations,verbose=True):
+def train(model, criterion, optimizer, budget, display_every = None, verbose=True):
+    Tstart = time.time()
     def closure():
         y_pred = model(x)
         loss = criterion(y_pred, y)
@@ -19,22 +21,31 @@ def train(model, criterion, optimizer, iterations,verbose=True):
         return loss
     
     history = []
-    for t in range(int(iterations)):
+    if hasattr(optimizer, 'budget'):
+        optimizer.budget = budget
+    
+    for t in range(budget):
         
         val_loss = optimizer.step(closure)
         if torch.is_tensor(val_loss):
             val_loss = val_loss.item()
 
         history.append(val_loss)
+        
+        if hasattr(optimizer, 'budget'):
+            if optimizer.budget <= 0:
+                break
 
         # print the behaviour
-        if t % 1000 == 0 and verbose:
+        if t % display_every == 0 and verbose:
             print(f'Iteration {t}, Loss: {val_loss:.2e}')
+
+    Tend = time.time()
+    print(f'Training time: {Tend - Tstart:.2f} seconds')
     return history
 
 def plot_results(history):
     plt.semilogy(history)
-    plt.show()
 
     colors = ['r' if Y[0]==1 else 'b' for Y in y.numpy()]
 
@@ -52,6 +63,7 @@ def plot_results(history):
             else:
                 z[i,j] = 1
 
+    plt.figure()
     plt.scatter(X[:,0],X[:,1], c = colors)
     plt.contourf(X1, X2, z, alpha=0.3)
     plt.show()
@@ -73,9 +85,11 @@ model = nn.Sequential(OrderedDict([
     ('sigmoid3', nn.Sigmoid())
 ]))
 
+budget = int(1e5)
+
 criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-2)
 # optimizer = paraflow(model.parameters(), lr_fine=1e-2, n_fine=100)
 
-history = train(model, criterion, optimizer, iterations=1e2)
+history = train(model, criterion, optimizer, budget=budget, display_every= int(budget//100))
 plot_results(history)
