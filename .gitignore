@@ -11,3 +11,5 @@ build/
 deepxde/
 __pycache__/
 python_implementation/results/
+html/
+latex/

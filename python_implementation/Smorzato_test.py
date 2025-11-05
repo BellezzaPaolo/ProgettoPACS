@@ -1,5 +1,6 @@
-"""
-Implements Neural Network for Smorzato Test:
+"""@package docstring
+Implements Neural Network for Smorzato Test
+
 It is a simple regression problem to approximate the function exp(-x)sin(x). The neural network has 1 input neurons, 1 output neurons, and 
 2 hidden layers with 16 neurons each. The activation function is the sigmoid function.
 """
@@ -16,32 +17,45 @@ import csv
 torch.manual_seed(12)
 
 class SmorzatoDataset(Dataset):
+    """Class inherited from torch.utils.data.Dataset for Smorzato Test
+    Args:
+        inputs: inputs data of the nural network
+        outputs: real outputs data of the neural network
+    """
     def __init__(self, inputs, outputs):
+        '''Initialize the dataset with inputs and outputs'''
         self.inputs = inputs
         self.outputs = outputs
 
     def __len__(self):
+        '''Return the total number of samples in the dataset'''
         return len(self.inputs)
 
     def __getitem__(self, idx):
+        '''Retrieve a sample from the dataset at the given index'''
         return self.inputs[idx], self.outputs[idx]
     
 
 class BudgetCallback(Callback):
-    """Set the budget for optimizers that support it.
+    """Class inherited by Callback of deepXDE
+    
+    Set the budget for optimizers that support it.
 
     Args:
         budget: Total number of iterations allowed.
     """
 
     def __init__(self, budget):
+        '''Initialize the BudgetCallback with a specified budget'''
         super().__init__()
         self.budget = budget
 
     def on_train_begin(self):
+        '''Set the model's budget at the beginning of training'''
         self.model.budget = self.budget
     
     def on_epoch_end(self):
+        '''Check if the budget has been exhausted at the end of each epoch'''
         if self.model.budget <=0:
             self.model.stop_training = True
 
@@ -50,7 +64,17 @@ class BudgetCallback(Callback):
 
 
 class SmorzatoModel(nn.Module):
+    '''Class inherited from nn.Module for Smorzato Test
+    Args:
+        dataset: dataset object of SmorzatoDataset class
+        network: neural network architecture
+        budget: total number of iterations allowed
+        stop_training: boolean variable to stop the training
+        criterion: loss function
+        opt: chosen optimizer
+    '''
     def __init__(self,dataset):
+        '''Initialize the SmorzatoModel with the dataset and neural network architecture'''
         super(SmorzatoModel, self).__init__()
         self.network = nn.Sequential(OrderedDict([
             ('fc1', nn.Linear(1, 16)),
@@ -67,9 +91,11 @@ class SmorzatoModel(nn.Module):
         self.criterion = torch.nn.MSELoss(reduction='sum')
 
     def forward(self, x):
+        '''Forward pass through the neural network'''
         return self.network(x)
 
     def compile(self, optimizer, budget):
+        '''Compile the model with the chosen optimizer and budget'''
         self.budget = budget
         self.opt = optimizer
 
@@ -77,6 +103,17 @@ class SmorzatoModel(nn.Module):
             self.opt.budget = budget
         
     def train(self, iterate, batch_size, display_every= 100, verbose=True, callbacks=None):
+        '''Train the neural network
+        Args:
+            iterate: number of epochs
+            batch_size: size of the batches
+            display_every: frequency of displaying training progress
+            verbose: boolean variable to print training information
+            callbacks: list of callback functions
+        Returns:
+            history: list of loss values during training
+            data: dictionary containing final training information
+        '''
 
         self.callbacks = CallbackList(callbacks=callbacks)
         self.callbacks.set_model(self)
@@ -84,6 +121,7 @@ class SmorzatoModel(nn.Module):
         if hasattr(self.opt, 'callbacks'):
             self.opt.callbacks = self.callbacks
 
+        # Define the closure function for optimization
         def closure():
             self.budget -= inputs.shape[0]
 
@@ -101,13 +139,16 @@ class SmorzatoModel(nn.Module):
 
         self.callbacks.on_train_begin()
 
+        # Training loop
         for epoch in range(iterate):
 
+            # callbacks at the beginning of epoch and batch
             self.callbacks.on_epoch_begin()
             self.callbacks.on_batch_begin()
 
             dataset_batched = DataLoader(self.dataset, batch_size=batch_size, shuffle=True)
             
+            # Iterate over batches
             for batch in dataset_batched:
                 inputs, outputs = batch
                 val_loss = self.opt.step(closure)
@@ -116,6 +157,7 @@ class SmorzatoModel(nn.Module):
 
                 history.append(val_loss)
 
+            # callbacks at the end of batch and epoch
             self.callbacks.on_batch_end()
             self.callbacks.on_epoch_end()
 
@@ -135,6 +177,7 @@ class SmorzatoModel(nn.Module):
             print(f'Training time: {Tend - Tstart:.2f} seconds')
             print(f'Final Loss: {history[-1]:.2e}, final budget: {self.budget} and number of epochs: {epoch}')
 
+        # Save final training data
         data = dict(
             final_loss = history[-1],
             final_budget = self.budget,
@@ -149,8 +192,15 @@ class SmorzatoModel(nn.Module):
         return history, data
 
     def plot_results(self,history):
-        plt.semilogy(history)
+        '''Plot training loss and decision boundary
+        Args:
+            history: list of loss values during training
+        '''
+        # Plot training loss
+        k = max(1, len(history)//1000)
+        plt.semilogy(history[::k])
 
+        # Plot decision boundary
         x_plot = torch.linspace(0, 10, 1000).reshape(-1, 1)
         y_ex = torch.exp(-x_plot) * torch.sin(x_plot)
         y_test = self.forward(x_plot)
@@ -162,18 +212,28 @@ class SmorzatoModel(nn.Module):
         plt.show()
 
     def save_data(self,filename, data, optimizer_name, lr, budget, n_fine=0):
+        '''Save training results to a CSV file
+        Args:
+            filename: name of the CSV file
+            data: dictionary containing final training information
+            optimizer_name: name of the optimizer used
+            lr: learning rate used
+            budget: budget used for training
+            n_fine: number of fine iterations (default is 0)
+        '''
         with open(filename, "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([optimizer_name, data["batch_size"], lr, data['final_budget'], budget, n_fine, data['final_loss'], data["epochs"], data["time_train"], data['optimizer_counter']])
 
 
+# Create dataset
 x = torch.linspace(0, 10, 30).reshape(-1, 1)
 
 y = torch.exp(-x) * torch.sin(x)
 
 dataset = SmorzatoDataset(x,y)
 
-
+# Hyperparameters to test
 n_fine = [10, 50, 100, 500, 1000, 2000]
 learning_r = [1e-1, 1e-2, 1e-3, 1e-4]
 
@@ -181,16 +241,17 @@ budgets = [int(1e4),int(1e5),int(1e6),int(1e7)]
 batch_size = dataset.__len__()
 
 
+# Create CSV file to store results and initialize header
 filename = "results/Smorzato_results.csv"
 
-
-
-with open(filename, "w", newline="") as f:
+with open(filename, "a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(['optimizer_name', "batch_size", 'lr', 'final_budget', 'budget', 'n_fine', 'final_loss', "epochs", "time_train", 'optimizer_counter'])
 
+# Run experiments
 for lr in learning_r:
     for b in budgets:
+        # Train with SGD optimizer
         model = SmorzatoModel(dataset)
         model.compile(optimizer=torch.optim.SGD(model.parameters(), lr= lr), budget= b)
         history,data = model.train(iterate = b, batch_size = batch_size, display_every= int(b//100), verbose = False, callbacks= [BudgetCallback(b)])
@@ -200,10 +261,9 @@ for lr in learning_r:
         model.plot_results(history)
 
         for nf in n_fine:
+            # Train with paraflow optimizer
             model = SmorzatoModel(dataset)
-
             model.compile(optimizer=paraflow(model.parameters(), lr_fine=lr, n_fine=nf), budget= b)
-
             history,data = model.train(iterate = b, batch_size = batch_size, display_every= int(b//100), verbose = False, callbacks= [BudgetCallback(b)])
             model.save_data(filename, data, "paraflow", lr, b, n_fine=nf)
             print('paraflow done for lr:', lr, ' budget:', b, ' n_fine:', nf)
