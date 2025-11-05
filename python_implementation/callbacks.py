@@ -605,10 +605,11 @@ class BudgetCallback(Callback):
         self.budget = budget
 
     def on_train_begin(self):
-        if hasattr(self.model.opt, 'budget'):
-            self.model.opt.budget = self.budget
+        self.model.train_state.budget = self.budget
     
     def on_epoch_end(self):
-        if hasattr(self.model.opt, 'budget'):
-            if self.model.opt.budget <=0:
-                self.model.stop_training = True
+        if self.model.train_state.budget <=0:
+            self.model.stop_training = True
+            
+            if hasattr(self.model.opt, 'stop_iteration'):
+                self.model.opt.stop_iteration = True

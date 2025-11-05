@@ -49,8 +49,10 @@ class paraflow(Optimizer):
         defaults = dict(
             lr_fine = lr_fine,
             n_fine = n_fine,
+            batch_fine = None,
             lr_coarse = lr_fine * n_fine,
             n_coarse = n_coarse,
+            batch_coarse = None,
             momentum = momentum,
             dampening = dampening,
             weight_decay = weight_decay,
@@ -59,15 +61,19 @@ class paraflow(Optimizer):
             foreach = foreach,
             differentiable = differentiable,
             fused = fused,
-            budget = 0
+            coarse = True
         )
 
         self.lr_fine = lr_fine
         self.n_fine = n_fine
+        self.batch_fine = None
         self.lr_coarse = lr_fine * n_fine
         self.n_coarse = n_coarse
+        self.batch_coarse = None
         self.verbose = verbose
-        self.budget = 0
+        self.coarse = True
+        self.callbacks = None
+        self.stop_iteration = False
 
         self.counter = dict(call_coarse = 0, call_fine = 0, correction_steps = 0, iterations = 0) 
 
@@ -98,7 +104,15 @@ class paraflow(Optimizer):
         i = 0
         L = 0
         # correction cicle
-        while stay and i < self.n_coarse and self.budget > 0:
+        while stay and i < self.n_coarse and not self.stop_iteration:
+
+            if getattr(self, "callbacks", None) is not None:
+                try:
+                    self.callbacks.on_epoch_begin()
+                    self.callbacks.on_batch_begin()
+                except Exception:
+                    pass
+
             bool1 = 0
             bool2 = 0
             diff = 0.0
@@ -144,6 +158,14 @@ class paraflow(Optimizer):
                     for p in group["params"]:
                         p.data = self.state[p]["U_coarse"].clone().detach()
                 stay = False
+
+            if getattr(self, "callbacks", None) is not None:
+                try:
+                    self.callbacks.on_batch_end()
+                    self.callbacks.on_epoch_end()
+                except Exception:
+                    pass
+
         # verbose print
         if self.verbose:
             print(f'ParaflowS iteration {i}, loss: {loss_fine}')
@@ -155,7 +177,6 @@ class paraflow(Optimizer):
         with torch.enable_grad():
             loss = closure()
 
-        self.budget -=1
         self.counter['call_coarse'] += 1
 
         for i,group in enumerate(self.param_groups):
@@ -174,11 +195,18 @@ class paraflow(Optimizer):
 
     def fine_solver(self,closure):
         loss = None
-        self.budget -= self.n_fine
         self.counter['call_fine'] += self.n_fine
         
         # cicle over the n_fine stpes
         for i in range(self.n_fine):
+
+            if getattr(self, "callbacks", None) is not None:
+                try:
+                    self.callbacks.on_epoch_begin()
+                    self.callbacks.on_batch_begin()
+                except Exception:
+                    pass
+            
             with torch.enable_grad():
                 loss = closure()
 
@@ -193,5 +221,15 @@ class paraflow(Optimizer):
                     with torch.no_grad():
                         # p.data += (-group["lr_fine"]) * d_p
                         p.data.add_(d_p, alpha=-group["lr_fine"])
+            
+            if getattr(self, "callbacks", None) is not None:
+                try:
+                    self.callbacks.on_batch_end()
+                    self.callbacks.on_epoch_end()
+                except Exception:
+                    pass
+
+            if self.stop_iteration:
+                break
             
         return loss

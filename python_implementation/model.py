@@ -377,8 +377,26 @@ class Model:
         )
 
         def train_step(inputs, targets, auxiliary_vars):
-            def closure():
-                losses = outputs_losses_train(inputs, targets, auxiliary_vars)[1]
+            def closure():#batch_size = 10, iter = 0):
+                # min_idx = 1
+                # max_idx = 10
+                # inputs_batch = inputs[min_idx,max_idx]
+                # if self.opt_name == 'paraflow':
+                #     self.opt.lr_fine
+
+                # else:
+                #     min_idx = self.batch_size
+                
+                # targets_batch = targets[min_idx,max_idx]
+
+                self.train_state.set_data_train(
+                    *self.data.train_next_batch(self.batch_size)
+                )
+
+                if hasattr(self.train_state, 'budget'):
+                    self.train_state.budget -= self.batch_size
+                
+                losses = outputs_losses_train(self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
                 total_loss = torch.sum(losses)
                 self.opt.zero_grad()
                 total_loss.backward()
@@ -669,6 +687,10 @@ class Model:
         if disregard_previous_best:
             self.train_state.disregard_best()
 
+        
+        if hasattr(self.opt, 'callbacks'):
+            self.opt.callbacks = self.callbacks
+
         if backend_name == "tensorflow.compat.v1":
             if self.train_state.step == 0:
                 self.sess.run(tf.global_variables_initializer())
@@ -718,9 +740,9 @@ class Model:
             self.callbacks.on_epoch_begin()
             self.callbacks.on_batch_begin()
 
-            self.train_state.set_data_train(
-                *self.data.train_next_batch(self.batch_size)
-            )
+            # self.train_state.set_data_train(
+            #     *self.data.train_next_batch(self.batch_size)
+            # )
             self._train_step(
                 self.train_state.X_train,
                 self.train_state.y_train,
@@ -731,6 +753,7 @@ class Model:
             self.train_state.step += 1
             if self.train_state.step % display_every == 0 or i + 1 == iterations:
                 self._test(verbose=verbose)
+                print(f'budget left: {self.train_state.budget}')
 
             self.callbacks.on_batch_end()
             self.callbacks.on_epoch_end()
