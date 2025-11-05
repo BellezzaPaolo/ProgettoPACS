@@ -10,3 +10,4 @@ main
 build/
 deepxde/
 __pycache__/
+python_implementation/results/
