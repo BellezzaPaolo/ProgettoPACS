@@ -13,8 +13,6 @@ from deepxde.optimizers.pytorch.paraflow import paraflow
 from deepxde.callbacks import Callback, CallbackList
 from torch.utils.data import Dataset, DataLoader
 import csv
-import random
-torch.manual_seed(12)
 
 class HighamDataset(Dataset):
     """Class inherited from torch.utils.data.Dataset for Higham Test
@@ -144,7 +142,6 @@ class HighamModel(nn.Module):
             elif batch_epoch == self.dataset.__len__():
                 indexes = list(range(self.dataset.__len__()))
             else:
-                print('ciao')
                 indexes = torch.randperm(self.dataset.__len__())[:batch_epoch]
 
             y_pred = self.forward(self.dataset.inputs[indexes])
@@ -157,6 +154,7 @@ class HighamModel(nn.Module):
         Tstart = time.time()
 
         self.callbacks.on_train_begin()
+        print(closure().item())
 
         # Training loop
         for epoch in range(iterate):
@@ -275,7 +273,7 @@ n_fine = [10, 50, 100, 500, 1000, 2000]
 learning_r = [1e-1, 1e-2, 1e-3, 1e-4]
 
 budgets = [int(1e4),int(1e5),int(1e6),int(1e7)]
-batch_size = int(dataset.__len__())
+batch_size = 1 #int(dataset.__len__())
 
 
 # lr = 1e-2
@@ -291,7 +289,7 @@ batch_size = int(dataset.__len__())
 
 
 # Create results file and write header
-filename = "results/Higham_results_"+str(batch_size)+"(1).csv"
+filename = "results/Higham_results_repr_"+str(batch_size)+".csv"
 
 with open(filename, "a", newline="") as f:
     writer = csv.writer(f)
@@ -301,6 +299,7 @@ with open(filename, "a", newline="") as f:
 for lr in learning_r:
     for b in budgets:
         # Train with SGD optimizer
+        torch.manual_seed(12)
         model = HighamModel(dataset)
         model.compile(optimizer=torch.optim.SGD(model.parameters(), lr= lr), budget= b)
         history,data = model.train(iterate = b, batch_size = batch_size, display_every= int(b//100), verbose = False, callbacks= [BudgetCallback(b)])
@@ -311,6 +310,7 @@ for lr in learning_r:
 
         for nf in n_fine:
             # Train with paraflow optimizer
+            torch.manual_seed(12)
             model = HighamModel(dataset)
             model.compile(optimizer=paraflow(model.parameters(), lr_fine=lr, n_fine=nf), budget= b)
             history,data = model.train(iterate = b, batch_size = batch_size, display_every= int(b//100), verbose = False, callbacks= [BudgetCallback(b)])

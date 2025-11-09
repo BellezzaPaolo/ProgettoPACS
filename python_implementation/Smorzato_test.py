@@ -263,11 +263,11 @@ n_fine = [10, 50, 100, 500, 1000, 2000]
 learning_r = [1e-1, 1e-2, 1e-3, 1e-4]
 
 budgets = [int(1e4),int(1e5),int(1e6),int(1e7)]
-batch_size = 1#int(dataset.__len__()/2)
+batch_size = int(dataset.__len__())
 
 
 # Create CSV file to store results and initialize header
-filename = "results/Smorzato_results_"+str(batch_size)+".csv"
+filename = "results/Smorzato_results_repr_"+str(batch_size)+".csv"
 
 with open(filename, "a", newline="") as f:
     writer = csv.writer(f)
@@ -277,6 +277,7 @@ with open(filename, "a", newline="") as f:
 for lr in learning_r:
     for b in budgets:
         # Train with SGD optimizer
+        torch.manual_seed(12)
         model = SmorzatoModel(dataset)
         model.compile(optimizer=torch.optim.SGD(model.parameters(), lr= lr), budget= b)
         history,data = model.train(iterate = b, batch_size = batch_size, display_every= int(b//100), verbose = False, callbacks= [BudgetCallback(b)])
@@ -287,6 +288,7 @@ for lr in learning_r:
 
         for nf in n_fine:
             # Train with paraflow optimizer
+            torch.manual_seed(12)
             model = SmorzatoModel(dataset)
             model.compile(optimizer=paraflow(model.parameters(), lr_fine=lr, n_fine=nf), budget= b)
             history,data = model.train(iterate = b, batch_size = batch_size, display_every= int(b//100), verbose = False, callbacks= [BudgetCallback(b)])
