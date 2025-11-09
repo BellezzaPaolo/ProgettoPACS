@@ -2,6 +2,7 @@
 #include <pybind11/embed.h>
 #include <functional>
 #include "Gradient_Descent.hpp"
+#include "ParaflowS.hpp"
 //#include "Model.hpp"
 
 namespace py = pybind11;
@@ -38,15 +39,17 @@ int main(){
     // // initilize the FNN class
     // FNN nn(layer_size, activation, initializer);
 
-    std::function<double(std::vector<double>&)> f = [](std::vector<double>& x){return (x[0]+1)*(x[0]+1)+x[1]*x[1];};
-    std::function<std::vector<double>(std::vector<double>&)> df = [](std::vector<double>& x){return std::vector<double>{2*x[0]+2, 2*x[1]};};
-    int max_iter = 100;
-    double tol = 1e-2;
-    int dim = 2;
+    std::function<double(Eigen::Matrix<double,2,1>&)> f = [](Eigen::Matrix<double,2,1>& x){return (x(0)+1)*(x(0)+1)+x(1)*x(1);};
+    std::function<Eigen::Matrix<double,2,1>(Eigen::Matrix<double,2,1>&)> df = [](Eigen::Matrix<double,2,1>& x){return Eigen::Matrix<double,2,1>{2*x(0)+2, 2*x(1)};};
+    int max_iter = 1000;
+    double tol = 1e-4;
     double lr = 0.01;
     int batch_size = 10;
+    int N_fine = 100, N_coarse = 2000, BS_coarse = 10, BS_fine = 10;
 
-    Gradient_Descent gd(f, df, max_iter, tol, dim, lr, batch_size);
+    ParaflowS pf(f, df, max_iter, tol, lr, N_fine,N_coarse, BS_coarse, BS_fine);
+    pf.optimize();
+    pf.plot_parameters_history();
 
 
 

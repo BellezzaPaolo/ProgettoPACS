@@ -5,17 +5,23 @@
 
 class ParaflowS : public Optimizer{
     private:
-        double lr_coarse;
-        double lr_fine = lr_coarse/n_fine;
+        double lr_coarse = lr_fine * n_fine;
+        double lr_fine;
         int n_fine;
         int n_coarse;
         int batch_size_coarse;
         int batch_size_fine;
+
+        Eigen::Matrix<double,2,1> coarse_parameters;
+        Eigen::Matrix<double,2,1> old_correction;
+        Eigen::Matrix<double,2,1> correction;
+
+        bool stay = true;
     
     public:
-        ParaflowS(std::function<double(std::vector<double>&)> f, std::function<std::vector<double>(std::vector<double>&)> df, int max_iter, double tol,int dim,
-        double LR_C,int N_fine, int N_coarse,int BS_coarse, int BS_fine):
-        Optimizer(f,df,max_iter,tol,dim),lr_coarse(LR_C),n_fine(N_fine),n_coarse(N_coarse),batch_size_coarse(BS_coarse),batch_size_fine(BS_fine){};
+        ParaflowS(std::function<double(Eigen::Matrix<double,2,1>&)> f, std::function<Eigen::Matrix<double,2,1>(Eigen::Matrix<double,2,1>&)> df, int max_iter, double tol,
+        double LR_F,int N_fine, int N_coarse,int BS_coarse, int BS_fine):
+        Optimizer(f,df,max_iter,tol),lr_fine(LR_F),n_fine(N_fine),n_coarse(N_coarse),batch_size_coarse(BS_coarse),batch_size_fine(BS_fine){};
 
         double get_lr_coarse() const {return lr_coarse;}
         void set_lr_coarse(double LR) {lr_coarse = LR;}
@@ -35,11 +41,11 @@ class ParaflowS : public Optimizer{
         int get_batch_size_fine() const {return batch_size_fine;}
         void set_batch_size_fine(int batch) {batch_size_fine = batch;}
 
-        void optimize() override{};
+        void optimize() override;
 
-        void coarse_solver();
+        double coarse_solver();
 
-        void fine_solver();
+        double fine_solver();
 
 };
 #endif

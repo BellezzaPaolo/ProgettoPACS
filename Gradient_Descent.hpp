@@ -8,16 +8,18 @@ class Gradient_Descent : public Optimizer{
         double lr;
         int batch_size;
     public:
-        Gradient_Descent(std::function<double(std::vector<double>&)> f, std::function<std::vector<double>(std::vector<double>&)> df, int max_iter, double tol,int dim,double LR, int batch):
-        Optimizer(f,df,max_iter,tol,dim),lr(LR),batch_size(batch){};
+        Gradient_Descent(std::function<double(Eigen::Matrix<double,2,1>&)> f, std::function<Eigen::Matrix<double,2,1>(Eigen::Matrix<double,2,1>&)> df, int max_iter, double tol,double LR, int batch):
+        Optimizer(f,df,max_iter,tol),lr(LR),batch_size(batch){};
 
-        double get_lr() const {return lr;}
-        void set_lr(double LR) {lr = LR;}
+        virtual ~Gradient_Descent();
 
-        int get_batch_size() const {return batch_size;}
-        void set_batch_size(int batch) {batch_size = batch;}
+        inline double get_lr() const {return lr;}
+        inline void set_lr(double LR) {lr = LR;}
 
-        void optimize() override{};
+        inline int get_batch_size() const {return batch_size;}
+        inline void set_batch_size(int batch) {batch_size = batch;}
+
+        void optimize() override;
 
 };
 #endif
