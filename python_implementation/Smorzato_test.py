@@ -168,12 +168,7 @@ class SmorzatoModel(nn.Module):
             self.callbacks.on_epoch_begin()
             self.callbacks.on_batch_begin()
 
-            # dataset_batched = DataLoader(self.dataset, batch_size=self.dataset.__len__(), shuffle=True)
-            
-            # # Iterate over batches
-            # for batch in dataset_batched:
-            #     print(f'Batch size: {batch[0].shape}')
-            #     inputs, outputs = batch
+            # train step
             val_loss = self.opt.step(closure)
             if torch.is_tensor(val_loss):
                 val_loss = val_loss.item()
@@ -202,9 +197,13 @@ class SmorzatoModel(nn.Module):
             print(f'Training time: {Tend - Tstart:.2f} seconds')
             print(f'Final Loss: {history[-1]:.2e}, final budget: {self.budget} and number of epochs: {epoch}')
 
-        # Save final training data
+        # evaluate the loss at the end of the training
+        y_pred = self.forward(self.dataset.inputs)
+        Loss = self.criterion(y_pred, self.dataset.outputs).item()
+
+        # Save final training data       
         data = dict(
-            final_loss = history[-1],
+            final_loss = Loss,
             final_budget = self.budget,
             epochs = epoch,
             time_train = Tend - Tstart,
@@ -263,7 +262,7 @@ n_fine = [10, 50, 100, 500, 1000, 2000]
 learning_r = [1e-1, 1e-2, 1e-3, 1e-4]
 
 budgets = [int(1e4),int(1e5),int(1e6),int(1e7)]
-batch_size = int(dataset.__len__())
+batch_size = int(dataset.__len__()/2)
 
 
 # Create CSV file to store results and initialize header
