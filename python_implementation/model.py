@@ -5,6 +5,8 @@ import warnings
 from collections import OrderedDict
 
 import numpy as np
+import csv
+import time
 
 from . import config
 from . import display
@@ -387,16 +389,29 @@ class Model:
                 # else:
                 #     min_idx = self.batch_size
                 
+                batch_epoch = None
+
+                if hasattr(self.opt, 'is_coarse'):
+                    if self.opt.is_coarse:
+                        batch_epoch = self.opt.batch_coarse
+                    else:
+                        # print(f'batch fine {self.opt.batch_fine}')
+                        batch_epoch = self.opt.batch_fine
+                else:
+                    batch_epoch = self.batch_size
+
+
                 # targets_batch = targets[min_idx,max_idx]
 
                 self.train_state.set_data_train(
-                    *self.data.train_next_batch(self.batch_size)
+                    *self.data.train_next_batch(batch_epoch)
                 )
 
                 if hasattr(self.train_state, 'budget'):
-                    self.train_state.budget -= self.batch_size
+                    self.train_state.budget -= inputs.shape[0]
                 
-                losses = outputs_losses_train(self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
+                # print(f'input shape: {inputs.shape[0]}')
+                losses = outputs_losses_train(inputs, targets, auxiliary_vars)[1] #self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
                 total_loss = torch.sum(losses)
                 self.opt.zero_grad()
                 total_loss.backward()
@@ -682,6 +697,11 @@ class Model:
             )
             iterations = epochs
         self.batch_size = batch_size
+
+        if hasattr(self.opt, 'batch_fine') and hasattr(self.opt, 'batch_coarse'):
+            self.opt.batch_fine = batch_size
+            self.opt.batch_coarse = 1
+
         self.callbacks = CallbackList(callbacks=callbacks)
         self.callbacks.set_model(self)
         if disregard_previous_best:
@@ -710,6 +730,7 @@ class Model:
         self.train_state.set_data_test(*self.data.test())
         self._test(verbose=verbose)
         self.callbacks.on_train_begin()
+        result_dict = None
         if optimizers.is_external_optimizer(self.opt_name):
             if backend_name == "tensorflow.compat.v1":
                 self._train_tensorflow_compat_v1_scipy(display_every, verbose=verbose)
@@ -719,13 +740,13 @@ class Model:
                 if self.opt_name == "L-BFGS":
                     self._train_pytorch_lbfgs(verbose=verbose)
                 elif self.opt_name == "NNCG" or self.opt_name == "paraflow":
-                    self._train_sgd(iterations, display_every, verbose=verbose)
+                    result_dict = self._train_sgd(iterations, display_every, verbose=verbose)
             elif backend_name == "paddle":
                 self._train_paddle_lbfgs(verbose=verbose)
         else:
             if iterations is None:
                 raise ValueError("No iterations for {}.".format(self.opt_name))
-            self._train_sgd(iterations, display_every, verbose=verbose)
+            result_dict = self._train_sgd(iterations, display_every, verbose=verbose)
         self.callbacks.on_train_end()
 
         if verbose > 0 and config.rank == 0:
@@ -733,16 +754,28 @@ class Model:
             display.training_display.summary(self.train_state)
         if model_save_path is not None:
             self.save(model_save_path, verbose=1)
-        return self.losshistory, self.train_state
+        return self.losshistory, self.train_state, result_dict
 
     def _train_sgd(self, iterations, display_every, verbose=1):
+        Tstart = time.time()
+        self.train_state.set_data_train(
+            *self.data.train_next_batch()
+        )        
+
+        losses = self.outputs_losses_train(
+                self.train_state.X_train,
+                self.train_state.y_train,
+                self.train_state.train_aux_vars)[1] #self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
+        print(torch.sum(losses).item())
+
         for i in range(iterations):
             self.callbacks.on_epoch_begin()
             self.callbacks.on_batch_begin()
 
-            # self.train_state.set_data_train(
-            #     *self.data.train_next_batch(self.batch_size)
-            # )
+            self.train_state.set_data_train(
+                *self.data.train_next_batch(self.batch_size)
+            )
+            
             self._train_step(
                 self.train_state.X_train,
                 self.train_state.y_train,
@@ -753,13 +786,38 @@ class Model:
             self.train_state.step += 1
             if self.train_state.step % display_every == 0 or i + 1 == iterations:
                 self._test(verbose=verbose)
-                print(f'budget left: {self.train_state.budget}')
+                #print(f'budget left: {self.train_state.budget}')
 
             self.callbacks.on_batch_end()
             self.callbacks.on_epoch_end()
 
             if self.stop_training:
                 break
+
+        Tend = time.time()
+
+
+        self.train_state.set_data_train(
+            *self.data.train_next_batch()
+        )        
+
+        losses = self.outputs_losses_train(
+                self.train_state.X_train,
+                self.train_state.y_train,
+                self.train_state.train_aux_vars)[1] #self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
+        total_loss = torch.sum(losses)
+
+        # Save final training data
+        result_dict = dict(
+            final_loss = total_loss.item(),
+            epochs = i,
+            time_train = Tend - Tstart,
+            optimizer_counter = 0
+        )
+        if hasattr(self.opt, 'counter'):
+            result_dict['optimizer_counter'] = self.opt.counter
+        
+        return result_dict
 
     def _train_tensorflow_compat_v1_scipy(self, display_every, verbose=1):
         def loss_callback(loss_train, loss_test, *args):
@@ -843,6 +901,7 @@ class Model:
             self.train_state.set_data_train(
                 *self.data.train_next_batch(self.batch_size)
             )
+
             self._train_step(
                 self.train_state.X_train,
                 self.train_state.y_train,
@@ -1190,6 +1249,29 @@ class Model:
         for k, v in zip(variables_names, values):
             print("Variable: {}, Shape: {}".format(k, v.shape))
             print(v)
+
+    def save_data(self, filename, result_dict, lr, budget, n_fine=0):
+        '''Save training results to a CSV file
+        Args:
+            filename: name of the CSV file
+            result_dict: dictionary containing final training information
+            optimizer_name: name of the optimizer used
+            lr: learning rate used
+            budget: budget used for training
+            n_fine: number of fine iterations (default is 0)
+        '''
+        with open(filename, "a", newline="") as f:
+            writer = csv.writer(f)
+            if self.batch_size is not None:
+                bs = self.batch_size
+            else:
+                bs = self.train_state.X_train.shape[0]
+
+            F_budget = None
+            if hasattr(self.train_state, 'budget'):
+                F_budget = self.train_state.budget
+
+            writer.writerow([self.opt_name, bs, lr, F_budget, budget, n_fine, result_dict["final_loss"], result_dict["epochs"], result_dict["time_train"], result_dict['optimizer_counter']])
 
 
 class TrainState:

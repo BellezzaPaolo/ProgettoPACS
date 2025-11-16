@@ -8,13 +8,14 @@ dde.config.set_random_seed(250)
 n = 2
 precision_train = 10
 precision_test = 30
-hard_constraint = True
+hard_constraint = False
 weights = 100  # if hard_constraint == False
 iterations = 5000
-parameters = [1e-3, 3, 150, "sin"]
+parameters = [1e-4, 3, 150, "sin"]
 
 # Define sine function
 sin = dde.backend.sin
+cos = dde.backend.cos
 
 learning_rate, num_dense_layers, num_dense_nodes, activation = parameters
 
@@ -27,12 +28,12 @@ def pde(x, y):
         dy_xx = dy_xx[0]
         dy_yy = dy_yy[0]
 
-    f = k0**2 * sin(k0 * x[:, 0:1]) * sin(k0 * x[:, 1:2])
+    f = k0**2 * (3 * sin(k0 * x[:, 0:1])- 2*cos(k0 * x[:, 0:1])) * sin(k0 * x[:, 1:2])
     return -dy_xx - dy_yy - f
 
 
 def func(x):
-    return np.sin(k0 * x[:, 0:1]) * np.sin(k0 * x[:, 1:2])
+    return np.sin(k0 * x[:, 0:1])**2 * np.sin(k0 * x[:, 1:2])
 
 
 def transform(x, y):
@@ -80,11 +81,12 @@ if hard_constraint == True:
 model = dde.Model(data, net)
 
 if hard_constraint == True:
-    model.compile("sgd", lr=learning_rate, metrics=["l2 relative error"])
+    model.compile("adam", lr=learning_rate, metrics=["l2 relative error"])
 else:
+    print('ciao')
     loss_weights = [1, weights]
     model.compile(
-        "adam",
+        "sgd",
         lr=learning_rate,
         metrics=["l2 relative error"],
         loss_weights=loss_weights,

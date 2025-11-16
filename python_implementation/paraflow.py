@@ -71,7 +71,7 @@ class paraflow(Optimizer):
         self.n_coarse = n_coarse
         self.batch_coarse = None
         self.verbose = verbose
-        self.coarse = True
+        self.is_coarse = False
         self.callbacks = None
         self.stop_iteration = False
 
@@ -173,6 +173,7 @@ class paraflow(Optimizer):
         return loss_fine
 
     def coarse_solver(self,closure):
+        self.is_coarse = True
         loss = None
         with torch.enable_grad():
             loss = closure()
@@ -194,6 +195,7 @@ class paraflow(Optimizer):
     
 
     def fine_solver(self,closure):
+        self.is_coarse = False
         loss = None
         self.counter['call_fine'] += self.n_fine
         
