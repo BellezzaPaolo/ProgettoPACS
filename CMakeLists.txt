@@ -20,8 +20,8 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # --- Source files ---
 set(SOURCES
     main.cpp
-    Gradient_Descent.cpp
-    ParaflowS.cpp
+    optimizer/Gradient_Descent.cpp
+    optimizer/ParaflowS.cpp
 )
 
 # --- Create executable ---
