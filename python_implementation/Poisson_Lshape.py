@@ -2,6 +2,7 @@
 import deepxde as dde
 import csv
 dde.backend.set_default_backend('pytorch')
+dde.config.set_random_seed(123)
 
 
 def pde(x, y):
@@ -37,10 +38,10 @@ data = dde.data.PDE(geom, pde, bc, num_domain=1200, num_boundary=120, num_test=1
 
 # Training parameters settings
 n_fine = [10, 50, 100, 500, 1000, 2000]
-learning_r = [1e-1, 1e-2, 1e-3, 1e-4]
+learning_r = [1e-3, 1e-4]#[1e-1, 1e-2, 1e-3, 1e-4]
 
 budgets = [int(1e5),int(1e6),int(1e7),int(1e8)]
-batch_size = None
+batch_size = int(1448//2)
 
 # Create results file and write header
 bc_file = batch_size if not None else 'full'
@@ -49,6 +50,73 @@ filename = "results/Poisson_Lshape_results_"+str(bc_file)+".csv"
 with open(filename, "a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(['optimizer_name', "batch_size", 'lr', 'final_budget', 'budget', 'n_fine', 'final_loss', "epochs", "time_train", 'optimizer_counter'])
+
+# Train with paraflow optimizer
+dde.config.set_random_seed(123)
+lr = 1e-2
+b = int(1e8)
+nf = 50
+
+net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot uniform")
+model = dde.Model(data, net)
+model.compile(optimizer='paraflow', lr = lr, n_fine = nf)
+losshistory, train_state, result_dict  = model.train(iterations=b, batch_size=batch_size, display_every=int(b//100),callbacks = [dde.callbacks.BudgetCallback(b)])
+#dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+model.save_data(filename, result_dict, lr, b, nf)
+print(f'paraflow done for lr: {lr:.2e}, budget: {b:.2e}, n_fine: {nf}')
+
+dde.config.set_random_seed(123)
+lr = 1e-2
+b = int(1e8)
+nf = 100
+
+net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot uniform")
+model = dde.Model(data, net)
+model.compile(optimizer='paraflow', lr = lr, n_fine = nf)
+losshistory, train_state, result_dict  = model.train(iterations=b, batch_size=batch_size, display_every=int(b//100),callbacks = [dde.callbacks.BudgetCallback(b)])
+#dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+model.save_data(filename, result_dict, lr, b, nf)
+print(f'paraflow done for lr: {lr:.2e}, budget: {b:.2e}, n_fine: {nf}')
+
+dde.config.set_random_seed(123)
+lr = 1e-2
+b = int(1e8)
+nf = 500
+
+net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot uniform")
+model = dde.Model(data, net)
+model.compile(optimizer='paraflow', lr = lr, n_fine = nf)
+losshistory, train_state, result_dict  = model.train(iterations=b, batch_size=batch_size, display_every=int(b//100),callbacks = [dde.callbacks.BudgetCallback(b)])
+#dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+model.save_data(filename, result_dict, lr, b, nf)
+print(f'paraflow done for lr: {lr:.2e}, budget: {b:.2e}, n_fine: {nf}')
+
+dde.config.set_random_seed(123)
+lr = 1e-2
+b = int(1e8)
+nf = 1000
+
+net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot uniform")
+model = dde.Model(data, net)
+model.compile(optimizer='paraflow', lr = lr, n_fine = nf)
+losshistory, train_state, result_dict  = model.train(iterations=b, batch_size=batch_size, display_every=int(b//100),callbacks = [dde.callbacks.BudgetCallback(b)])
+#dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+model.save_data(filename, result_dict, lr, b, nf)
+print(f'paraflow done for lr: {lr:.2e}, budget: {b:.2e}, n_fine: {nf}')
+
+dde.config.set_random_seed(123)
+lr = 1e-2
+b = int(1e8)
+nf = 2000
+
+net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot uniform")
+model = dde.Model(data, net)
+model.compile(optimizer='paraflow', lr = lr, n_fine = nf)
+losshistory, train_state, result_dict  = model.train(iterations=b, batch_size=batch_size, display_every=int(b//100),callbacks = [dde.callbacks.BudgetCallback(b)])
+#dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+model.save_data(filename, result_dict, lr, b, nf)
+print(f'paraflow done for lr: {lr:.2e}, budget: {b:.2e}, n_fine: {nf}')
+
 
 # Run experiments
 for lr in learning_r:

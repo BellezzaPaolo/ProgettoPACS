@@ -261,12 +261,12 @@ dataset = SmorzatoDataset(x,y)
 n_fine = [10, 50, 100, 500, 1000, 2000]
 learning_r = [1e-1, 1e-2, 1e-3, 1e-4]
 
-budgets = [int(1e4),int(1e5),int(1e6),int(1e7)]
-batch_size = int(dataset.__len__()/2)
+budgets = [int(1e4),int(1e5),int(1e6)] #,int(1e7)]
+batch_size = int(dataset.__len__())
 
 
 # Create CSV file to store results and initialize header
-filename = "results/Smorzato_results_repr_"+str(batch_size)+".csv"
+filename = "results/Smorzato_results_lr_equal_"+str(batch_size)+".csv"
 
 with open(filename, "a", newline="") as f:
     writer = csv.writer(f)
