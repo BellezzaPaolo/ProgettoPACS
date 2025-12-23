@@ -20,6 +20,7 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # --- Source files ---
 set(SOURCES
     main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/layer/Layer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/optimizer/Gradient_Descent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/optimizer/ParaflowS.cpp
 )

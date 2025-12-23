@@ -11,7 +11,7 @@ class Relu_Layer: public Layer{
         vector & forward_activation() override{
 
             for (size_t i = 0; i < N_output; i++){
-                output[i] = std::max(0.0, a[i]);
+                output(i) = std::max(0.0, a[i]);
             }
 
             return output;

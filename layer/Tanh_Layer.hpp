@@ -10,7 +10,7 @@ class Tanh_Layer: public Layer{
 
         vector & forward_activation() override{
             for (int i = 0; i < N_output; i++){
-                output[i] = std::tanh(a[i]);
+                output(i) = std::tanh(a[i]);
             }
             return output;
 
