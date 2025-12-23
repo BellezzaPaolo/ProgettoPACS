@@ -127,6 +127,7 @@ class Optimizer{
             plt.attr("title")("Parameters History");
             plt.attr("show")();
         }
+        
         virtual void optimize() =0;
 
 };

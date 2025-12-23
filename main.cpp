@@ -54,15 +54,12 @@ int main(){
 
     vector input = vector::Random(1);
 
-    vector a = net.forward(input);
+    vector& a = net.forward(input);
     std::cout << std::endl;
     std::cout << "Input: " << input << std::endl;
+    std::cout<<std::endl;
     std::cout << "Output: " << a << std::endl;
 
-    vector b = vector::Ones(3);
-    vector c = vector::Ones(3);
-
-    std::cout << b * c << std::endl;
 
     return 0;
 }

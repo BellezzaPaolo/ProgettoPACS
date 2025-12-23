@@ -15,18 +15,33 @@ using vector = Eigen::VectorXd;
 namespace layer{
 
 class Layer{
-    private:
+    protected:
         const int N_input;
         const int N_output;
+
         matrix weights;
         vector bias;
+
+        matrix dweights;
+        vector dbias;
+
+        vector a;
+        vector output;
     
     public:
         Layer(int n_input, int n_output):N_input(n_input), N_output(n_output){
             // initialize the weights and biases in a default mode for robustness
             initialize_weight<Initializer_weight::Glorot_Uniform>();
             initialize_bias<Initializer_bias::Zero>();
+
+            dweights = matrix::Ones(N_output,N_input);
+            dbias = vector::Ones(N_output);
+
+            a = vector::Zero(N_output);
+            output = vector::Zero(N_output);
         };
+
+        Layer(const Layer & ) = default;
 
         template<Initializer_weight Iw>
         void initialize_weight(){
@@ -88,11 +103,15 @@ class Layer{
             return;
         }
 
-        vector forward(const vector & x) const{
-            return weights * x + bias;
+        vector & forward(const vector & x){
+            a = weights * x + bias;
+
+            return forward_activation();
         }
 
-        virtual vector forward_activation(const vector& x) = 0;
+        virtual vector & forward_activation() =0;
+
+        virtual std::string layer_type() =0;
 
         void print() const{
             std::cout << "weight: " << std::endl;
@@ -106,3 +125,4 @@ class Layer{
 
 }
 #endif
+
