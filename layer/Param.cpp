@@ -1,9 +1,9 @@
-#include "Layer.hpp"
+#include "Param.hpp"
 
 namespace layer{
 
     template<Initializer_weight Iw>
-    void Layer::initialize_weight(){
+    void Param::initialize_weight(){
         if constexpr (Iw == Initializer_weight::One){
             weights = matrix::Ones(N_output,N_input);
         }
@@ -40,7 +40,7 @@ namespace layer{
     }
 
     template<Initializer_bias Ib>
-    void Layer::initialize_bias(){
+    void Param::initialize_bias(){
         if constexpr (Ib == Initializer_bias::One){
             bias = vector::Ones(N_output);
         }
@@ -62,23 +62,17 @@ namespace layer{
         return;
     }
 
-    vector & Layer::forward(const vector & x){
-        a = weights * x + bias;
-
-        return forward_activation();
-    }
-
     // Explicit template instantiations for all used combinations
-    template void Layer::initialize_weight<Initializer_weight::One>();
-    template void Layer::initialize_weight<Initializer_weight::Uniform>();
-    template void Layer::initialize_weight<Initializer_weight::Glorot_Uniform>();
-    template void Layer::initialize_weight<Initializer_weight::He_Uniform>();
-    template void Layer::initialize_weight<Initializer_weight::Glorot_Norm>();
-    template void Layer::initialize_weight<Initializer_weight::He_Norm>();
+    template void Param::initialize_weight<Initializer_weight::One>();
+    template void Param::initialize_weight<Initializer_weight::Uniform>();
+    template void Param::initialize_weight<Initializer_weight::Glorot_Uniform>();
+    template void Param::initialize_weight<Initializer_weight::He_Uniform>();
+    template void Param::initialize_weight<Initializer_weight::Glorot_Norm>();
+    template void Param::initialize_weight<Initializer_weight::He_Norm>();
 
-    template void Layer::initialize_bias<Initializer_bias::Zero>();
-    template void Layer::initialize_bias<Initializer_bias::One>();
-    template void Layer::initialize_bias<Initializer_bias::Uniform>();
-    template void Layer::initialize_bias<Initializer_bias::Normal>();
+    template void Param::initialize_bias<Initializer_bias::Zero>();
+    template void Param::initialize_bias<Initializer_bias::One>();
+    template void Param::initialize_bias<Initializer_bias::Uniform>();
+    template void Param::initialize_bias<Initializer_bias::Normal>();
 
 }

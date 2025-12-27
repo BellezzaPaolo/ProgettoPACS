@@ -48,7 +48,7 @@ int main(){
 
     FNN<A> net(layer_size);
 
-    net.initialize<Iw, Ib>();
+    net.reset<Iw, Ib>();
 
     net.print();
 

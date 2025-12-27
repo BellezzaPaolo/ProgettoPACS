@@ -59,10 +59,9 @@ class FNN{
         }
 
         template <Initializer_weight Iw, Initializer_bias Ib>
-        void initialize(){
+        void reset(){
             for (auto layer : params){
-                layer->initialize_weight<Iw>();
-                layer->initialize_bias<Ib>();
+                layer->reset<Iw,Ib>();
             }
             return;
         }

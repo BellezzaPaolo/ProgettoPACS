@@ -2,7 +2,7 @@
 
 namespace layer{
 
-class Linear_Layer: public Layer{
+class Linear_Layer final: public Layer{
     public:
         Linear_Layer(int n_input, int n_output): Layer(n_input, n_output){};
 

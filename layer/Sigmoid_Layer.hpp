@@ -2,7 +2,7 @@
 
 namespace layer{
 
-class Sigmoid_Layer: public Layer{
+class Sigmoid_Layer final: public Layer{
     public:
         Sigmoid_Layer(int n_input, int n_output): Layer(n_input, n_output){};
 

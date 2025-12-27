@@ -2,7 +2,7 @@
 
 namespace layer{
 
-class Relu_Layer: public Layer{
+class Relu_Layer final: public Layer{
     public:
         Relu_Layer(int n_input, int n_output): Layer(n_input, n_output){};
 

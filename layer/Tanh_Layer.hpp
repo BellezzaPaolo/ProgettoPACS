@@ -2,7 +2,7 @@
 
 namespace layer{
 
-class Tanh_Layer: public Layer{
+class Tanh_Layer final: public Layer{
     public:
         Tanh_Layer(int n_input, int n_output): Layer(n_input, n_output){};
 
