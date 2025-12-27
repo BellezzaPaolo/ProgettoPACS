@@ -17,6 +17,7 @@ class FNN{
         const std::vector<int> layer_size;
         int depth = 0;
         std::vector<layer::Layer*> params;
+        // std::vector<std::reference_wrapper<const layer::Param>> grads;
         vector output;
 
     public:
@@ -36,6 +37,7 @@ class FNN{
             }
 
             params.push_back(new layer::Linear_Layer(*(layer_size.end()-2),*(layer_size.end()-1)));
+            // grads.push_back(params.back()->get_grad());
 
             output = vector::Zero(layer_size.back());
         }
@@ -54,14 +56,17 @@ class FNN{
                 params.push_back(new layer::Sigmoid_Layer(n_input, n_output));
             }
 
+            // grads.push_back(params.back()->get_grad());
+
             depth += 1;
             return;
         }
 
         template <Initializer_weight Iw, Initializer_bias Ib>
-        void reset(){
+        void initialize(){
             for (auto layer : params){
-                layer->reset<Iw,Ib>();
+                layer->initialize_weight<Iw>();
+                layer->initialize_bias<Ib>();
             }
             return;
         }

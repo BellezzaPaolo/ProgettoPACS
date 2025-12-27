@@ -16,13 +16,16 @@ using vector = Eigen::VectorXd;
 namespace layer{
 
 class Param{
-    public:
+    protected:
         const int N_input;
         const int N_output;
 
         matrix weights;
         vector bias;
 
+        friend class Layer;
+
+    public:
         Param(int n_input, int n_output): N_input(n_input), N_output(n_output){
             // initialize the weights and biases in a default mode for robustness
             initialize_weight<Initializer_weight::Glorot_Uniform>();

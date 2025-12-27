@@ -6,7 +6,7 @@
 
 namespace layer{
 
-class Layer: protected Param{
+class Layer: public Param{
     protected:
         Param grad;
 
@@ -21,6 +21,8 @@ class Layer: protected Param{
 
         Layer(const Layer & ) = default;
 
+        const Param& get_grad() const {return grad;} 
+
         vector & forward(const vector & x){
             a = weights * x + bias;
 
@@ -30,12 +32,6 @@ class Layer: protected Param{
         virtual vector & forward_activation() =0;
 
         virtual std::string layer_type() =0;
-
-        template <Initializer_weight Iw, Initializer_bias Ib>
-        void reset(){
-            initialize_weight<Iw>();
-            initialize_bias<Ib>();
-        }
 
         void print() const{
             std::cout << "weight: " << std::endl;
