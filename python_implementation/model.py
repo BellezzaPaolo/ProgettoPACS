@@ -379,29 +379,17 @@ class Model:
         )
 
         def train_step(inputs, targets, auxiliary_vars):
-            def closure():#batch_size = 10, iter = 0):
-                # min_idx = 1
-                # max_idx = 10
-                # inputs_batch = inputs[min_idx,max_idx]
-                # if self.opt_name == 'paraflow':
-                #     self.opt.lr_fine
-
-                # else:
-                #     min_idx = self.batch_size
-                
+            def closure():
                 batch_epoch = None
 
                 if hasattr(self.opt, 'is_coarse'):
                     if self.opt.is_coarse:
                         batch_epoch = self.opt.batch_coarse
                     else:
-                        # print(f'batch fine {self.opt.batch_fine}')
                         batch_epoch = self.opt.batch_fine
                 else:
                     batch_epoch = self.batch_size
 
-
-                # targets_batch = targets[min_idx,max_idx]
 
                 self.train_state.set_data_train(
                     *self.data.train_next_batch(batch_epoch)
@@ -410,8 +398,7 @@ class Model:
                 if hasattr(self.train_state, 'budget'):
                     self.train_state.budget -= inputs.shape[0]
                 
-                # print(f'input shape: {inputs.shape[0]}')
-                losses = outputs_losses_train(inputs, targets, auxiliary_vars)[1] #self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
+                losses = outputs_losses_train(inputs, targets, auxiliary_vars)[1]
                 total_loss = torch.sum(losses)
                 self.opt.zero_grad()
                 total_loss.backward()
@@ -420,7 +407,6 @@ class Model:
             def closure_mixed():
                 with torch.autocast(device_type=torch.get_default_device().type, dtype=torch.float16):
                     return closure()
-            #print(f'size: {self.train_state.X_train.shape}')
             self.opt.step(closure if not config.mixed else closure_mixed)
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
@@ -765,8 +751,7 @@ class Model:
         losses = self.outputs_losses_train(
                 self.train_state.X_train,
                 self.train_state.y_train,
-                self.train_state.train_aux_vars)[1] #self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
-        print(torch.sum(losses).item())
+                self.train_state.train_aux_vars)[1]
 
         for i in range(iterations):
             self.callbacks.on_epoch_begin()
@@ -786,7 +771,6 @@ class Model:
             self.train_state.step += 1
             if self.train_state.step % display_every == 0 or i + 1 == iterations:
                 self._test(verbose=verbose)
-                #print(f'budget left: {self.train_state.budget}')
 
             self.callbacks.on_batch_end()
             self.callbacks.on_epoch_end()
@@ -804,7 +788,7 @@ class Model:
         losses = self.outputs_losses_train(
                 self.train_state.X_train,
                 self.train_state.y_train,
-                self.train_state.train_aux_vars)[1] #self.train_state.train_x, targets, auxiliary_vars)[1] #inputs_batch, targets_batch, auxiliary_vars)[1]
+                self.train_state.train_aux_vars)[1]
         total_loss = torch.sum(losses)
 
         # Save final training data

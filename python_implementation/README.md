@@ -1,12 +1,14 @@
-# ProgettoPACS
-This subfolder contains 5 files that enable the pyhton implementation of the ParaFlow method into the library [deepXDE](https://github.com/lululxvi/deepxde) and 3 files for test it.
+# Python implementation of Paraflow
+
+This subfolder contains 5 files that enable the Python implementation of the ParaFlow method into the [deepXDE](https://github.com/lululxvi/deepxde) library and 3 files for testing it.
+
+# Installation
 To install it:
 - Clone the [deepXDE repository](https://github.com/lululxvi/deepxde)
-- move the files in their locations with this commands and in case replace the existing file:
+- Move the files to their respective locations using these commands (replace existing files if necessary):
   ```bash
-  mv Poisson_Neumann_1d.py deepxde/
   mv Higham_test.py deepxde/
-  mv Smorzato_tset.py deepxde/
+  mv Smorzato_test.py deepxde/
   mv Poisson_Lshape.py deepxde/
   mv paraflow.py deepxde/deepxde/optimizers/pytorch/
   mv optimizers.py deepxde/deepxde/optimizers/pytorch/
@@ -15,15 +17,25 @@ To install it:
   mv pde.py deepxde/deepxde/data/
   ```
 
-  NOTE: the file install.sh is ready to do this 2 passages automatically, by simply executing:
-   ```bash
-   ./install.sh
-   ```
-   To clone it uses the SSH key.
+  > **NOTE:** The `install.sh` script automates these steps. Simply run:
+  > ```bash
+  > ./install.sh
+  > ```
+  > The script uses SSH keys for cloning.
 
+## Requirements
+To make it work, the dependencies for deepXDE are listed in its [requirements.txt](https://github.com/lululxvi/deepxde/blob/master/requirements.txt). The ParaFlow optimizer has been implemented for the PyTorch backend, so you need to select that backend.
+
+I used a Conda environment; the library versions are documented in `environment.yml`. To recreate this environment, use:
+```bash
+conda env create -f environment.yml
+conda activate pacs
+```
+
+# File Description
 In particular:
-- Poisson_Neumann_1d.py contains a working example using the paraflow algorithm
-- paraflow.py contains the class that actually implements the method
-- model.py and optimizer.py are small modifications of the 2 existing files in the deepXDE source only to link the paraflow class with the rest of the library
-  
-To make it work the requiements of deepXDE are already in the [requirements.txt](https://github.com/lululxvi/deepxde/blob/master/requirements.txt) and the backend for which has been implemented paraflow, is pytorch. So needs to be selected that backend.
+- `paraflow.py` contains the class that implements the ParaFlow method
+- `model.py` and `optimizers.py` are modifications of the corresponding deepXDE files, linking the ParaFlow class with the rest of the library
+- `callbacks.py` adds a budget-based callback to compare the ParaFlow optimizer with existing deepXDE optimizers
+- `pde.py` modifies the `train_next_batch()` method in the PDE class to enable batch training
+- The other 3 files implement test cases. Please read them carefully before running, as some tests require several hours due to training multiple neural networks.

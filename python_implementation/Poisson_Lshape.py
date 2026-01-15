@@ -45,14 +45,15 @@ batch_size = int(1448//2)
 
 # Create results file and write header
 bc_file = batch_size if not None else 'full'
-filename = "results/Poisson_Lshape_results_"+str(bc_file)+".csv"
+filename = "./Poisson_Lshape_results_"+str(bc_file)+".csv"
 
-with open(filename, "a", newline="") as f:
+with open(filename, "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(['optimizer_name', "batch_size", 'lr', 'final_budget', 'budget', 'n_fine', 'final_loss', "epochs", "time_train", 'optimizer_counter'])
 
 
 # Run experiments
+# NOTE this loop can last some hours because it trains many neural networks
 for lr in learning_r:
     for b in budgets:
         # Train with SGD optimizer

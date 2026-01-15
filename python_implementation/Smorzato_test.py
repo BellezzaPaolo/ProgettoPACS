@@ -131,6 +131,7 @@ class SmorzatoModel(nn.Module):
         # Define the closure function for optimization
         def closure():
             batch_epoch = None
+            # set batch size
             if hasattr(self.opt, 'is_coarse'):
                 if self.opt.is_coarse:
                     self.budget -= self.opt.batch_coarse
@@ -142,12 +143,12 @@ class SmorzatoModel(nn.Module):
                 self.budget -= self.batch_size
                 batch_epoch = self.batch_size
 
+            # select the batch
             if batch_epoch == 1:
                 indexes = [torch.randint(self.dataset.__len__() - 1, (1,))]
             elif batch_epoch == self.dataset.__len__():
                 indexes = list(range(self.dataset.__len__()))
             else:
-                #print('ciao')
                 indexes = torch.randperm(self.dataset.__len__())[:batch_epoch]
 
             y_pred = self.forward(self.dataset.inputs[indexes])
@@ -266,13 +267,14 @@ batch_size = int(dataset.__len__())
 
 
 # Create CSV file to store results and initialize header
-filename = "results/Smorzato_results_lr_equal_"+str(batch_size)+".csv"
+filename = "./Smorzato_results_"+str(batch_size)+".csv"
 
 with open(filename, "a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(['optimizer_name', "batch_size", 'lr', 'final_budget', 'budget', 'n_fine', 'final_loss', "epochs", "time_train", 'optimizer_counter'])
 
 # Run experiments
+# NOTE this loop can last some hours because it trains many neural networks
 for lr in learning_r:
     for b in budgets:
         # Train with SGD optimizer

@@ -124,7 +124,6 @@ class paraflow(Optimizer):
             # coarse pass
             loss_coarse = self.coarse_solver(closure).item()
             
-            #print(f'ParaflowS correction step {i}, loss: {loss_fine} --> {loss_coarse}')
             # check for the end of the cicle
             if loss_coarse <= loss_fine or i == 0:
                 for group in self.param_groups:
@@ -168,9 +167,7 @@ class paraflow(Optimizer):
                 
                 # forward pass
                 d_p = p.grad
-                # store detached clone to avoid linking to the computational graph
                 self.state[p]['bff1'].copy_(p.data - group['lr_coarse'] * d_p)
-        #print(loss.item())
 
         return loss
     
@@ -198,11 +195,9 @@ class paraflow(Optimizer):
                     if p.grad is None:
                         continue
                     
-                    # forward pass
+                    # update weights
                     d_p = p.grad
-                    # update in-place to preserve storage and avoid creating new tensor
                     with torch.no_grad():
-                        # p.data += (-group["lr_fine"]) * d_p
                         p.data.add_(d_p, alpha=-group["lr_fine"])
             
             if getattr(self, "callbacks", None) is not None:

@@ -1,6 +1,5 @@
 git clone git@github.com:lululxvi/deepxde.git
 
-mv Poisson_Neumann_1d.py deepxde/
 mv Higham_test.py deepxde/
 mv Smorzato_test.py deepxde/
 mv Poisson_Lshape.py deepxde/

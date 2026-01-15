@@ -187,7 +187,6 @@ class PDE(Data):
                 )
             )
         
-        # print(f'input shape: {inputs.shape[0]} and test shape: {model.train_state.X_test.shape[0]}and {model.net.training}')
 
         if inputs.shape[0] == model.net.training and self.num_bcs_batch is not None:
             num_bcs = self.num_bcs_batch
@@ -231,7 +230,6 @@ class PDE(Data):
             len_bc = self.train_x_bc.shape[0]
             len_pde = self.train_x_all.shape[0]
             len_training = self.train_x.shape[0]
-            # print(f'dim training set {len_training}, dim training bc: {len_bc}, dim pde training set: {len_pde}')
 
             
             if batch_size > len_training:
@@ -261,14 +259,9 @@ class PDE(Data):
                 self.train_x_all = self.train_x_all[rng.permutation(len_pde)]
                 self.idx_bc_prec = 0
                 self.idx_pde_prec = 0
-                # print('\n\nshuffle\n\n')
             
             x_bcs = [bc.collocation_points(self.train_x[:batch_size_bc]) for bc in self.bcs]
-            # print(f'x_bcs minibatch: {x_bcs} and {self.train_x[:batch_size_bc]} and dim bc_batch: {batch_size_bc}')
             self.num_bcs_batch = list(map(len, x_bcs))
-            #print(f'bc_batch: {self.num_bcs_batch} and {self.num_bcs}')
-
-            # print(f'first training set: {self.train_x_all[0]}, first bc: {self.train_x_bc[0]} first batch: {self.train_x[0]}, dim batch: {self.train_x.shape}')
         
         self.train_y = self.soln(self.train_x) if self.soln else None
         if self.auxiliary_var_fn is not None:
