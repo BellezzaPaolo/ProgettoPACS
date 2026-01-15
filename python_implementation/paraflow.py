@@ -113,39 +113,20 @@ class paraflow(Optimizer):
                 except Exception:
                     pass
 
-            bool1 = 0
-            bool2 = 0
-            diff = 0.0
             for k,group in enumerate(self.param_groups):
                 for j,p in enumerate(group["params"]):
                     if i == 0:
                         L += 1
-                        # use detached clones to avoid unexpected aliasing
-                        # self.state[p]['U_fine'] = p.data.clone().detach()
                         self.state[p]['correction'].copy_(p.data - self.state[p]['bff1'])
 
-                    # update parameter in-place to avoid changing the Parameter object's data pointer
-                    #else:
                     p.data.copy_(self.state[p]['bff1'] + self.state[p]['correction'])
 
-                    # diff += torch.norm(self.state[p]['U_fine'] - p.data).item()
-                    
-                    # use allclose for floating point comparison
-                    # if torch.allclose(self.state[p]['bff1'], self.state[p]['bff2']):
-                    #     bool2 += 1
-            # if bool1 == L:
-            #     print('ufine == data')
-            # if bool2 == L:
-                # # print('bff1 == bff2')
-
-            # print(f'iter {i} | U_fine - data| = {diff}')
             # coarse pass
             loss_coarse = self.coarse_solver(closure).item()
             
             #print(f'ParaflowS correction step {i}, loss: {loss_fine} --> {loss_coarse}')
             # check for the end of the cicle
             if loss_coarse <= loss_fine or i == 0:
-                #print('copia')
                 for group in self.param_groups:
                     for p in group["params"]:
                         self.state[p]["U_coarse"] = p.data.clone().detach()

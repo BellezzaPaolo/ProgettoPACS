@@ -1,14 +1,22 @@
 # ProgettoPACS
-This subfolder contains 4 files that enable the pyhton implementation of the ParaFlow method into the library [deepXDE](https://github.com/lululxvi/deepxde).
-To make it work:
+This subfolder contains 5 files that enable the pyhton implementation of the ParaFlow method into the library [deepXDE](https://github.com/lululxvi/deepxde) and 3 files for test it.
+To install it:
 - Clone the [deepXDE repository](https://github.com/lululxvi/deepxde)
-- move this 4 files in their locations with this commands and in case replace the existing file:
+- move the files in their locations with this commands and in case replace the existing file:
   ```bash
-  mv Poisson_Neumann_1d.py deepxde
+  mv Poisson_Neumann_1d.py deepxde/
+  mv Higham_test.py deepxde/
+  mv Smorzato.py deepxde/
+  mv Poisson_Lshape.py deepxde/
   mv paraflow.py deepxde/deepxde/optimizers/pytorch/
   mv optimizer.py deepxde/deepxde/optimizers/pytorch/
   mv model.py deepxde/deepxde/
+  mv callback.py deepxde/deepxde/
+  mv pde.py deepxde/deepxde/data/
   ```
+
+  NOTE: the file install.sh is ready to do this 2 passages automatically. To clone uses the SSH key.
+  
 In particular:
 - Poisson_Neumann_1d.py contains a working example using the paraflow algorithm
 - paraflow.py contains the class that actually implements the method
