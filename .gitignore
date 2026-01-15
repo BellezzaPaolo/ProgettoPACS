@@ -13,3 +13,5 @@ __pycache__/
 python_implementation/results/
 html/
 latex/
+
+python_implementation/Copy_files_to_track.sh
