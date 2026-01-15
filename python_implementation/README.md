@@ -6,17 +6,21 @@ To install it:
   ```bash
   mv Poisson_Neumann_1d.py deepxde/
   mv Higham_test.py deepxde/
-  mv Smorzato.py deepxde/
+  mv Smorzato_tset.py deepxde/
   mv Poisson_Lshape.py deepxde/
   mv paraflow.py deepxde/deepxde/optimizers/pytorch/
-  mv optimizer.py deepxde/deepxde/optimizers/pytorch/
+  mv optimizers.py deepxde/deepxde/optimizers/pytorch/
   mv model.py deepxde/deepxde/
-  mv callback.py deepxde/deepxde/
+  mv callbacks.py deepxde/deepxde/
   mv pde.py deepxde/deepxde/data/
   ```
 
-  NOTE: the file install.sh is ready to do this 2 passages automatically. To clone uses the SSH key.
-  
+  NOTE: the file install.sh is ready to do this 2 passages automatically, by simply executing:
+   ```bash
+   ./install.sh
+   ```
+   To clone it uses the SSH key.
+
 In particular:
 - Poisson_Neumann_1d.py contains a working example using the paraflow algorithm
 - paraflow.py contains the class that actually implements the method
