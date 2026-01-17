@@ -1,7 +1,10 @@
 #include <iostream>
 #include <pybind11/embed.h>
+#include <pybind11/stl.h>
 #include <functional>
+#include <memory>
 #include "FNN.hpp"
+#include "boundary_condition/Dirichlet_BC.hpp"
 #include "optimizer/Gradient_Descent.hpp"
 #include "optimizer/ParaflowS.hpp"
 //#include "Model.hpp"
@@ -9,18 +12,36 @@
 namespace py = pybind11;
 
 int main(){
-    // py::scoped_interpreter guard{}; // start the interpreter and keep it alive
-    // py::module_ sys = py::module_::import("sys");
-    // // py::print(sys.attr("path"));
-    // sys.attr("path").attr("append")("/home/paolo/Desktop/ProgettoPACS"); // add to the working directory to reach problem_settings.py
-    // // py::print(sys.attr("path"));
-    // py::module_ dde = py::module_::import("deepxde"); //import deepxde
+    py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+    py::module_ sys = py::module_::import("sys");
+    // Add conda environment paths
+    // sys.attr("path").attr("append")("/home/paolo/miniforge3/envs/pacs/lib/python3.11/site-packages");
+    // sys.attr("path").attr("append")("/home/paolo/miniforge3/envs/pacs/lib/python3.11");
+    // sys.attr("path").attr("append")("/home/paolo/Desktop/ProgettoPACS");
+    //import deepxde
+    py::module_ dde = py::module_::import("deepxde"); 
     // py::module_ problem_settings = py::module_::import("problem_settings"); // import problem informations like domain, pde, bc,...
 
-    // // geometry
-    // py::object geom = dde.attr("geometry").attr("Interval")(problem_settings.attr("a"), problem_settings.attr("b"));
+    // geometry
+    std::vector<std::array<double, 2>> vertices = {{0.0, 0.0}, {1.0, 0.0}, {1.0, -1.0}, {-1.0, -1.0}, {-1.0, 1.0}, {0.0, 1.0}};
 
-    // // boundary conditions
+    py::object geom = dde.attr("geometry").attr("Polygon")(vertices);
+
+    // boundary conditions
+    std::function<bool(const vector&, bool)> on_boundary = [](const vector&, bool on_bc){return on_bc;};
+    std::function<matrix(const matrix&)> func = [](const matrix& x){return matrix::Ones(x.rows(), 1);};
+
+    std::vector<std::shared_ptr<Boundary_Condition>> bc_vector;
+    bc_vector.push_back(std::make_shared<DirichletBC>(geom, func, on_boundary));
+
+    matrix prova = (matrix(4, 2) << 0.5, 0.0, 0.6, 0.0, 0.0, -1.0, 0.5, -1.0).finished();
+    matrix output = (matrix(4, 1) << 2.0, 0.0, 3.0, 0.1).finished();
+
+    matrix error = bc_vector[0]->error(prova, prova, output, 0, 3);
+
+    std::cout << "data points: "<< prova << std::endl;
+    std::cout << "ouput NN: " << output << std::endl;
+    std::cout << "errors: " << error << std::endl;
     // py::list bc_list;
     // bc_list.append( dde.attr("icbc").attr("DirichletBC")(geom, problem_settings.attr("func_l"), problem_settings.attr("boundary_l")));
     // bc_list.append( dde.attr("icbc").attr("NeumannBC")(geom, problem_settings.attr("func_r"),problem_settings.attr("boundary_r")));
@@ -38,27 +59,27 @@ int main(){
     // std::string initializer = problem_settings.attr("initializer").cast<std::string>();
 
     // initilize the FNN class
-    std::srand(42);//(unsigned int)) time(0));
+    // std::srand(42);//(unsigned int)) time(0));
 
-    constexpr Initializer_bias Ib = Initializer_bias::One;
-    constexpr Initializer_weight Iw = Initializer_weight::He_Norm;
-    constexpr activation_type A = activation_type::tanh;
+    // constexpr Initializer_bias Ib = Initializer_bias::One;
+    // constexpr Initializer_weight Iw = Initializer_weight::He_Norm;
+    // constexpr activation_type A = activation_type::tanh;
 
-    std::vector<int> layer_size = {1, 4, 4, 1};
+    // std::vector<int> layer_size = {1, 4, 4, 1};
 
-    FNN<A> net(layer_size);
+    // FNN<A> net(layer_size);
 
-    net.initialize<Iw, Ib>();
+    // net.initialize<Iw, Ib>();
 
-    net.print();
+    // net.print();
 
-    vector input = vector::Random(1);
+    // vector input = vector::Random(1);
 
-    vector& a = net.forward(input);
-    std::cout << std::endl;
-    std::cout << "Input: " << input << std::endl;
-    std::cout<<std::endl;
-    std::cout << "Output: " << a << std::endl;
+    // vector& a = net.forward(input);
+    // std::cout << std::endl;
+    // std::cout << "Input: " << input << std::endl;
+    // std::cout<<std::endl;
+    // std::cout << "Output: " << a << std::endl;
 
 
     return 0;
