@@ -6,24 +6,28 @@
 
 
 /**
- * @class DirichletBC
+ * @class Dirichlet_BC
  * @brief Dirichlet boundary condition: y(x) = func(x).
  */
-class __attribute__((visibility("hidden"))) DirichletBC : public Boundary_Condition {
+class __attribute__((visibility("hidden"))) Dirichlet_BC : public Boundary_Condition {
 private:
     std::function<matrix(const matrix&)> func;
     
 public:
     /**
-     * @brief Constructor for DirichletBC.
+     * @brief Constructor for Dirichlet_BC.
      * @param geom Geometry instance.
      * @param func Function that specifies the boundary value.
      * @param on_boundary Boundary check function.
      * @param component Output component (default: 0).
      */
-    DirichletBC(py::handle geom, std::function<matrix(const matrix&)> func, std::function<bool(const vector&, bool)> on_boundary, int component = 0): 
+    Dirichlet_BC(py::handle geom, std::function<matrix(const matrix&)> func, std::function<bool(const vector&, bool)> on_boundary, int component = 0): 
         Boundary_Condition(geom, on_boundary, component), func(func) {};
     
+    /**
+     * @brief Virtual destructor.
+     */
+    virtual ~Dirichlet_BC();
          
 
     /**

@@ -3,8 +3,9 @@
 #include <stdexcept>
 #include <algorithm>
 
+Dirichlet_BC:: ~Dirichlet_BC() = default;
 
-matrix DirichletBC::error(const matrix& X, 
+matrix Dirichlet_BC::error(const matrix& X, 
                             const matrix& inputs, 
                             const matrix& outputs, 
                             int beg, int end) const {
@@ -19,7 +20,7 @@ matrix DirichletBC::error(const matrix& X,
     // Check dimensions
     if (values.cols() != 1) {
         throw std::runtime_error(
-            "DirichletBC function should return an array of shape N by 1 for each "
+            "Dirichlet_BC function should return an array of shape N by 1 for each "
             "component. Use argument 'component' for different output components."
         );
     }

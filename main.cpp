@@ -32,7 +32,7 @@ int main(){
     std::function<matrix(const matrix&)> func = [](const matrix& x){return matrix::Ones(x.rows(), 1);};
 
     std::vector<std::shared_ptr<Boundary_Condition>> bc_vector;
-    bc_vector.push_back(std::make_shared<DirichletBC>(geom, func, on_boundary));
+    bc_vector.push_back(std::make_shared<Dirichlet_BC>(geom, func, on_boundary));
 
     matrix prova = (matrix(4, 2) << 0.5, 0.0, 0.6, 0.0, 0.0, -1.0, 0.5, -1.0).finished();
     matrix output = (matrix(4, 1) << 2.0, 0.0, 3.0, 0.1).finished();
@@ -43,7 +43,7 @@ int main(){
     std::cout << "ouput NN: " << output << std::endl;
     std::cout << "errors: " << error << std::endl;
     // py::list bc_list;
-    // bc_list.append( dde.attr("icbc").attr("DirichletBC")(geom, problem_settings.attr("func_l"), problem_settings.attr("boundary_l")));
+    // bc_list.append( dde.attr("icbc").attr("Dirichlet_BC")(geom, problem_settings.attr("func_l"), problem_settings.attr("boundary_l")));
     // bc_list.append( dde.attr("icbc").attr("NeumannBC")(geom, problem_settings.attr("func_r"),problem_settings.attr("boundary_r")));
 
     // // collect all pde data into a single class
