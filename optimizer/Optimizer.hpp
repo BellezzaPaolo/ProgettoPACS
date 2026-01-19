@@ -1,3 +1,6 @@
+#ifndef OPTIMIZER_HPP
+#define OPTIMIZER_HPP
+
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -5,9 +8,6 @@
 #include <Eigen/Dense>
 
 namespace py = pybind11;
-
-#ifndef OPTIMIZER_HPP
-#define OPTIMIZER_HPP
 
 class Optimizer{
     protected:

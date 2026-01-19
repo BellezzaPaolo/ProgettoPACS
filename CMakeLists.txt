@@ -25,6 +25,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/optimizer/ParaflowS.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/boundary_condition/Boundary_Condition.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/boundary_condition/Dirichlet_BC.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Pde.cpp
 )
 
 # --- Create executable ---

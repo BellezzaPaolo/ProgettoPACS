@@ -1,7 +1,7 @@
-#include "Optimizer.hpp"
-
 #ifndef GRADIENT_DESCENT_HPP
 #define GRADIENT_DESCENT_HPP
+
+#include "Optimizer.hpp"
 
 class Gradient_Descent : public Optimizer{
     private:

@@ -1,26 +1,27 @@
 #include "Boundary_Condition.hpp"
+#include <pybind11/eigen.h>
 #include <algorithm>
 
 matrix Boundary_Condition::filter(const matrix& X) const {
-    std::vector<int> indices;
-    bool flag;
+    Eigen::Index j = 0;
+    std::vector<size_t> index;
 
     // Check each point to see if it's on the boundary
-    for (int i = 0; i < X.rows(); ++i) {
-        vector point = X.row(i);
+    Eigen::Array<bool, Eigen::Dynamic, 1> index_bool =  geom.attr("on_boundary")(X).cast<Eigen::Array<bool, Eigen::Dynamic, 1>>();
 
-        flag = geom.attr("on_boundary")(point).cast<bool>();
-        if (on_boundary(point, flag)){
-            indices.push_back(i);
+    for(size_t i = 0; i< X.rows(); ++i){
+        if(on_boundary(X.row(i), index_bool[i])){
+            index.push_back(i);
+            j++;
         }
     }
-    
+
+    matrix filtered(j, X.cols());
     // Build filtered matrix
-    matrix filtered(indices.size(), X.cols());
-    for (size_t i = 0; i < indices.size(); ++i) {
-        filtered.row(i) = X.row(indices[i]);
+    for(size_t i = 0; i < j; ++i){
+        filtered.row(i) = X.row(index[i]);
     }
-    
+
     return filtered;
 }
 

@@ -1,7 +1,7 @@
-#include "Optimizer.hpp"
-
 #ifndef PARAFLOWS_HPP
 #define PARAFLOWS_HPP
+
+#include "Optimizer.hpp"
 
 class ParaflowS : public Optimizer{
     private:

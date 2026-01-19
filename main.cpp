@@ -7,6 +7,7 @@
 #include "boundary_condition/Dirichlet_BC.hpp"
 #include "optimizer/Gradient_Descent.hpp"
 #include "optimizer/ParaflowS.hpp"
+#include "Pde.hpp"
 //#include "Model.hpp"
 
 namespace py = pybind11;
@@ -42,23 +43,17 @@ int main(){
     std::cout << "data points: "<< prova << std::endl;
     std::cout << "ouput NN: " << output << std::endl;
     std::cout << "errors: " << error << std::endl;
-    // py::list bc_list;
-    // bc_list.append( dde.attr("icbc").attr("Dirichlet_BC")(geom, problem_settings.attr("func_l"), problem_settings.attr("boundary_l")));
-    // bc_list.append( dde.attr("icbc").attr("NeumannBC")(geom, problem_settings.attr("func_r"),problem_settings.attr("boundary_r")));
+
+    std::function<std::vector<matrix>(const matrix&, const matrix&)> pde_equation = [](const matrix&, const matrix&){std::vector<matrix> res; return res;};
+    Pde pde(geom, pde_equation, bc_vector, 5,10);
+
+    pde.generate_train_points();
+    pde.generate_bc_points();
 
     // // collect all pde data into a single class
     // py::object data = dde.attr("data").attr("PDE")(geom, problem_settings.attr("pde"), bc_list, 16, 2, py::arg("solution") = problem_settings.attr("func_ex"), py::arg("num_test") = 100);
 
-    // // import all neural network informations
-    // py::object py_layer_size = problem_settings.attr("layer_size");
-    // std::vector<int> layer_size;
-    // for (auto item : py_layer_size) {
-    //     layer_size.push_back(item.cast<int>());
-    // }
-    // std::string activation = problem_settings.attr("activation").cast<std::string>();
-    // std::string initializer = problem_settings.attr("initializer").cast<std::string>();
-
-    // initilize the FNN class
+    // // initilize the FNN class
     // std::srand(42);//(unsigned int)) time(0));
 
     // constexpr Initializer_bias Ib = Initializer_bias::One;
@@ -73,14 +68,13 @@ int main(){
 
     // net.print();
 
-    // vector input = vector::Random(1);
+    // matrix input = matrix::Random(1,1);
 
     // vector& a = net.forward(input);
     // std::cout << std::endl;
     // std::cout << "Input: " << input << std::endl;
     // std::cout<<std::endl;
     // std::cout << "Output: " << a << std::endl;
-
 
     return 0;
 }
