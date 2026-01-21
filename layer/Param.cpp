@@ -1,1 +1,0 @@
-// Intentionally left empty: Param is header-only.
