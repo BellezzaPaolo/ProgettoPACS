@@ -89,6 +89,7 @@ matrix Pde::losses(
 }
 
 matrix& Pde::train_next_batch(int batch_size) const{
+    matrix res;
     
-    return;
+    return res;
 }
