@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include <functional>
 #include <memory>
+#include <autodiff/forward/dual.hpp>
 #include "FNN.hpp"
 #include "boundary_condition/Dirichlet_BC.hpp"
 #include "optimizer/Gradient_Descent.hpp"
@@ -53,28 +54,28 @@ int main(){
     // // collect all pde data into a single class
     // py::object data = dde.attr("data").attr("PDE")(geom, problem_settings.attr("pde"), bc_list, 16, 2, py::arg("solution") = problem_settings.attr("func_ex"), py::arg("num_test") = 100);
 
-    // // initilize the FNN class
-    // std::srand(42);//(unsigned int)) time(0));
+    // initilize the FNN class
+    std::srand(42);//(unsigned int)) time(0));
 
-    // constexpr Initializer_bias Ib = Initializer_bias::One;
-    // constexpr Initializer_weight Iw = Initializer_weight::He_Norm;
-    // constexpr activation_type A = activation_type::tanh;
+    constexpr Initializer_bias Ib = Initializer_bias::One;
+    constexpr Initializer_weight Iw = Initializer_weight::He_Norm;
+    constexpr activation_type A = activation_type::tanh;
 
-    // std::vector<int> layer_size = {1, 4, 4, 1};
+    std::vector<int> layer_size = {1, 4, 4, 1};
 
-    // FNN<A> net(layer_size);
+    FNN<A> net(layer_size);
 
-    // net.initialize<Iw, Ib>();
+    net.initialize<Iw, Ib>();
 
-    // net.print();
+    net.print(true);
 
-    // matrix input = matrix::Random(1,1);
+    matrix input = matrix::Random(1,1);
 
-    // vector& a = net.forward(input);
-    // std::cout << std::endl;
-    // std::cout << "Input: " << input << std::endl;
-    // std::cout<<std::endl;
-    // std::cout << "Output: " << a << std::endl;
+    vector a = net.forward(input);
+    std::cout << std::endl;
+    std::cout << "Input: " << input << std::endl;
+    std::cout<<std::endl;
+    std::cout << "Output: " << a << std::endl;
 
     return 0;
 }
