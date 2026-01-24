@@ -12,10 +12,10 @@ matrix Dirichlet_BC::error(const matrix& X,
 
     // Extract the relevant portion of X
     // X.block(start_row, start_col, num_rows, num_cols)
-    matrix X_slice = X.block(beg, 0, end - beg, X.cols());
+    // matrix X_slice = X.block(beg, 0, end - beg, X.cols());
     
     // Compute boundary values using the function
-    matrix values = func(X_slice);
+    matrix values = func(X.block(beg, 0, end - beg, X.cols()));
     
     // Check dimensions
     if (values.cols() != 1) {
