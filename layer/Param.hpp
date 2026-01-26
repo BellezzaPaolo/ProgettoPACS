@@ -47,9 +47,6 @@ class Param{
         void initialize_bias();
 };
 
-// Convenience alias for current double-based usage
-using Paramd = Param<double>;
-
 // Inline template implementations
 template <typename T>
 template <Initializer_weight Iw>

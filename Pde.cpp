@@ -64,18 +64,19 @@ void Pde::generate_train_points(){
 }
 
 void Pde::generate_bc_points(){
-    int i = 0;
     int real_points_on_boundary = 0;
-    for( auto bc: bcs){
-        train_x_bc[i] = bc->collocation_points(train_x_pde);
+    for(size_t i = 0; i < bcs.size(); ++i){
+        train_x_bc[i] = bcs[i]->collocation_points(train_x_pde);
 
         num_bcs[i] = train_x_bc[i].rows();
 
         real_points_on_boundary += num_bcs[i];
-        i++;
+
+        // std::cout << " bc "<< i << " num_bcs: " << num_bcs[i] << " train_x_bc[i] " << train_x_bc[i] <<std::endl;
     }
     // reassign num_boundary
     num_boundary = real_points_on_boundary;
+    // std::cout << " num_boundary " << num_boundary << std::endl;
     return;
 }
 
@@ -101,6 +102,7 @@ std::vector<double> Pde::losses(
 ){
     // Validate shapes
     if (inputs.rows() != outputs.rows()) {
+        std::cout << "inputs rows are "<< inputs.rows() << "and outputs rows are "<< outputs.rows()<< std::endl; 
         throw std::runtime_error("inputs and outputs must have the same number of rows");
     }
 

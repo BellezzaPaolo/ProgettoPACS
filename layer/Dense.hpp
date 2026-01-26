@@ -5,8 +5,8 @@
 #include "activation.hpp"
 #include <algorithm>
 
-// Simple dense layer stored by value, inheriting from Param<T>
-template <typename T, typename Activation>
+// Simple dense layer
+template <typename T>
 class Dense : public Param<T> {
 public:
     Dense(int in, int out) : Param<T>(in, out) {}
@@ -17,18 +17,36 @@ public:
         this->template initialize_bias<Ib>();
     }
 
-    // Linear part only (no activation)
-    vector_t<T> linear(const vector_t<T>& x) const {
+    // Linear part of forward pass
+    vector_t<T> forward(const vector_t<T>& x) const {
         return (this->weights * x + this->bias).eval();
+    }
+
+    // Mixed-scalar forward pass: allows input scalar type to differ from
+    // the stored parameter scalar type (e.g. weights/bias as double, input as
+    // autodiff::var or autodiff::dual2nd).
+    template <typename S>
+    vector_t<S> forward(const vector_t<S>& x) const {
+        // NOTE: do NOT cast weights/bias to S for reverse-mode autodiff::var.
+        // Casting would turn every weight into an independent AD variable and can
+        // explode the graph or break Hessian computation. Instead, rely on scalar
+        // ops between (double) parameters and (S) activations.
+        vector_t<S> y(this->weights.rows());
+        for(int r = 0; r < this->weights.rows(); ++r){
+            // Seed the accumulation from x to avoid introducing new leaf AD vars.
+            S sum = x(0) * 0.0;
+            for(int c = 0; c < this->weights.cols(); ++c){
+                sum += this->weights(r, c) * x(c);
+            }
+            sum += this->bias(r);
+            y(r) = sum;
+        }
+        return y;
     }
 
     // // Accessors (read-only)
     // const matrix_t<T>& weight_matrix() const { return this->weights; }
     // const vector_t<T>& bias_vector() const { return this->bias; }
-
-    vector_t<T> operator()(const vector_t<T>& x) const {
-        return Activation::template apply<T>((this->weights * x + this->bias).eval());
-    }
 
     void print() const{
         std::cout << "W:\n" << this-> weights << std::endl;
