@@ -5,11 +5,18 @@ project(projectPACS LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # For pybind11 safety
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 # --- pybind11 from Conda ---
 set(pybind11_DIR "/home/paolo/miniforge3/envs/pacs/share/cmake/pybind11")
+
+# --- libtorch ---
+# Point this to the folder where you extracted libtorch
+list(APPEND CMAKE_PREFIX_PATH "/home/paolo/libtorch")
 find_package(pybind11 REQUIRED)
+find_package(Torch REQUIRED)
+
 
 # --- Include directories ---
 include_directories(${.})
@@ -31,8 +38,15 @@ set(SOURCES
 # --- Create executable ---
 add_executable(example ${SOURCES})
 
+# Torch provides recommended compiler flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+
 # --- Link pybind11 ---
-target_link_libraries(example PRIVATE pybind11::embed Eigen3::Eigen)
+target_link_libraries(example PRIVATE pybind11::embed Eigen3::Eigen ${TORCH_LIBRARIES})
+
+# --- Torch-only example (no Python embedding) ---
+target_include_directories(example PRIVATE ${TORCH_INCLUDE_DIRS})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 # --- Set environment variables for running the executable ---
 set(PYTHON_ENV_HOME "/home/paolo/miniforge3/envs/pacs")
