@@ -11,7 +11,7 @@
  */
 class __attribute__((visibility("hidden"))) Dirichlet_BC : public Boundary_Condition {
 private:
-    std::function<matrix(const matrix&)> func;
+    std::function<tensor(const tensor&)> func;
     
 public:
     /**
@@ -21,7 +21,7 @@ public:
      * @param on_boundary Boundary check function.
      * @param component Output component (default: 0).
      */
-    Dirichlet_BC(py::handle geom, std::function<matrix(const matrix&)> func, std::function<bool(const vector&, bool)> on_boundary, int component = 0): 
+    Dirichlet_BC(py::handle geom, std::function<tensor(const tensor&)> func, std::function<bool(const tensor&, bool)> on_boundary, int component = 0): 
         Boundary_Condition(geom, on_boundary, component), func(func) {};
     
     /**
@@ -33,10 +33,10 @@ public:
     /**
      * @brief Compute the Dirichlet BC error.
      */
-    matrix error(const matrix& X, 
-                  const matrix& inputs, 
-                  const matrix& outputs, 
-                  int beg, int end) const override;
+    tensor error(const tensor& X, 
+              const tensor& inputs, 
+              const tensor& outputs, 
+              int beg, int end) const override;
 };
 
 #endif

@@ -1,30 +1,53 @@
 #include "Boundary_Condition.hpp"
-#include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
 #include <algorithm>
 
-matrix Boundary_Condition::filter(const matrix& X) const {
-    Eigen::Index j = 0;
-    std::vector<size_t> index;
+tensor Boundary_Condition::filter(const tensor& X) const {
+    // X is assumed to be of shape [N, dim]
+    TORCH_CHECK(X.dim() == 2, "Boundary_Condition::filter expects X to be 2D [N, dim]");
 
-    // Check each point to see if it's on the boundary
-    Eigen::Array<bool, Eigen::Dynamic, 1> index_bool =  geom.attr("on_boundary")(X).cast<Eigen::Array<bool, Eigen::Dynamic, 1>>();
+    const auto N = X.size(0);
+    const auto dim = X.size(1);
 
-    for(size_t i = 0; i< X.rows(); ++i){
-        if(on_boundary(X.row(i), index_bool[i])){
-            index.push_back(i);
-            j++;
+    // Convert X to a NumPy array for calling geom.on_boundary (deepxde-style API).
+    py::array_t<double> X_np({N, dim});
+    auto buf = X_np.mutable_unchecked<2>();
+    auto X_cpu = X.to(torch::kCPU).contiguous();
+
+    for (int64_t i = 0; i < N; ++i) {
+        for (int64_t j = 0; j < dim; ++j) {
+            buf(i, j) = X_cpu.index({i, j}).item<double>();
         }
     }
 
-    matrix filtered(j, X.cols());
-    // Build filtered matrix
-    for(size_t i = 0; i < j; ++i){
-        filtered.row(i) = X.row(index[i]);
+    // geom.on_boundary returns a boolean array of shape [N]
+    py::array_t<bool> index_bool_np = geom.attr("on_boundary")(X_np).cast<py::array_t<bool>>();
+    auto idx_view = index_bool_np.unchecked<1>();
+
+    std::vector<int64_t> indices;
+    indices.reserve(N);
+    for (int64_t i = 0; i < N; ++i) {
+        // Build a 1D tensor view for the i-th point
+        auto x_i = X_cpu.index({i}); // shape [dim]
+        if (on_boundary(x_i, idx_view(i))) {
+            indices.push_back(i);
+        }
     }
 
-    return filtered;
+    if (indices.empty()) {
+        return torch::empty({0, dim}, X.options());
+    }
+
+    // Stack the selected rows into the filtered tensor
+    std::vector<tensor> rows;
+    rows.reserve(indices.size());
+    for (auto idx : indices) {
+        rows.push_back(X_cpu.index({idx}).unsqueeze(0));
+    }
+
+    return torch::cat(rows, /*dim=*/0).to(X.device());
 }
 
-matrix Boundary_Condition::collocation_points(const matrix& X) const {
+tensor Boundary_Condition::collocation_points(const tensor& X) const {
     return filter(X);
 }

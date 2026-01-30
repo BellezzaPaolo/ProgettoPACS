@@ -5,27 +5,39 @@
 
 Dirichlet_BC::~Dirichlet_BC() = default;
 
-matrix Dirichlet_BC::error(const matrix& X, 
-                            const matrix& inputs, 
-                            const matrix& outputs, 
+tensor Dirichlet_BC::error(const tensor& X, 
+                            const tensor& inputs, 
+                            const tensor& outputs, 
                             int beg, int end) const {
 
-    // Extract the relevant portion of X
-    // X.block(start_row, start_col, num_rows, num_cols)
-    // matrix X_slice = X.block(beg, 0, end - beg, X.cols());
-    
-    // Compute boundary values using the function
-    matrix values = func(X.block(beg, 0, end - beg, X.cols()));
-    
-    // Check dimensions
-    if (values.cols() != 1) {
-        throw std::runtime_error("Dirichlet_BC function should return an array of shape N by 1 for each "
+    TORCH_CHECK(X.dim() == 2, "Dirichlet_BC::error expects X to be 2D [N, dim]");
+    TORCH_CHECK(outputs.dim() == 2, "Dirichlet_BC::error expects outputs to be 2D [N, n_out]");
+
+    const auto N = X.size(0);
+    const auto dim = X.size(1);
+
+    TORCH_CHECK(beg >= 0 && end <= N && beg <= end, "Dirichlet_BC::error: invalid beg/end range");
+
+    const int64_t num_rows = end - beg;
+    if (num_rows == 0) {
+        return torch::zeros({0, 1}, outputs.options());
+    }
+
+    // Slice X for the relevant rows
+    auto X_slice = X.index({torch::indexing::Slice(beg, end), torch::indexing::Slice()});
+
+    // Compute boundary target values: shape [num_rows, 1]
+    tensor values = func(X_slice);
+    if (values.dim() != 2 || values.size(1) != 1 || values.size(0) != num_rows) {
+        throw std::runtime_error("Dirichlet_BC function should return a tensor of shape (N, 1) for each "
             "component. Use argument 'component' for different output components.");
     }
-    
-    // Compute error: outputs - values
-    matrix error_matrix = outputs.block(beg, component, end - beg, 1) - values;
-    
-    return error_matrix;
+
+    // Slice outputs for the specified component: shape [num_rows, 1]
+    auto out_slice = outputs.index({torch::indexing::Slice(beg, end), component});
+    out_slice = out_slice.view({num_rows, 1});
+
+    // Error: outputs - values
+    return out_slice - values;
 }
 

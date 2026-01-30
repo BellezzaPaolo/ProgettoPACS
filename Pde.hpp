@@ -1,16 +1,15 @@
 #pragma once
 
-#include <Eigen/Dense>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <pybind11/embed.h>
+#include <torch/torch.h>
 #include "boundary_condition/Boundary_Condition.hpp"
 
 namespace py = pybind11;
 
-using matrix = Eigen::MatrixXd;
-using vector = Eigen::VectorXd;
+using tensor = torch::Tensor;
 
 class __attribute__((visibility("hidden"))) Pde {
 private:
@@ -19,7 +18,7 @@ private:
     int phisical_dim;
 
     // PDE residual function
-    std::function<std::vector<matrix>(const matrix& inputs, const matrix& outputs)> pde;
+    std::function<std::vector<tensor>(const tensor& inputs, const tensor& outputs)> pde;
 
     // Boundary conditions
     std::vector<std::shared_ptr<Boundary_Condition>> bcs;
@@ -30,15 +29,15 @@ private:
 
     std::string train_distribution;
 
-    matrix train_x_pde; // is train_x_all of deepXDE, following the TODO comment has been changed the name
-    std::vector<matrix> train_x_bc;
-    matrix test;
+    tensor train_x_pde; // is train_x_all of deepXDE, following the TODO comment has been changed the name
+    std::vector<tensor> train_x_bc;
+    tensor test;
 
     std::vector<int> num_bcs;
 
     // TODO add the exact solution and its handle in the generation of the training and test set 
 
-    matrix train_x;
+    tensor train_x;
     bool is_train_x_initialized;
 
     // Batching state
@@ -60,16 +59,16 @@ private:
 public:
     // Constructor
     Pde(py::handle geom,
-        std::function<std::vector<matrix>(const matrix&, const matrix&)> pde,
+        std::function<std::vector<tensor>(const tensor&, const tensor&)> pde,
         std::vector<std::shared_ptr<Boundary_Condition>> bcs,
         int Num_domain, int Num_boundary, int Num_test = 4, std::string train_distribution = "Hammersley");
 
     std::vector<double> losses(
-        const matrix& inputs,
-        const matrix& outputs,
-        const std::function<double(const matrix&)>& loss_fn
+        const tensor& inputs,
+        const tensor& outputs,
+        const std::function<double(const tensor&)>& loss_fn
     );
 
     // Build next training batch; if batch_size <= 0, use full set
-    matrix& train_next_batch(const int batch_size = 0);
+    tensor& train_next_batch(const int batch_size = 0);
 };
