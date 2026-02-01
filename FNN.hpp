@@ -1,251 +1,258 @@
 #ifndef FNN_HPP
 #define FNN_HPP
 
+#include <torch/torch.h>
 #include <iostream>
 #include <vector>
-#include <chrono>
-#include <autodiff/forward/dual.hpp>
-#include "layer/Dense.hpp"
-#include "layer/activation.hpp"
+#include <stdexcept>
+#include <cmath>
 
-enum class activation_type {relu, linear, tanh, sigmoid};
+/**
+ * @file FNN.hpp
+ * @brief Fully-connected neural network (feed-forward) implemented with LibTorch.
+ *
+ * This header provides:
+ * - activation and initialization enums
+ * - a template network class `FNN<Activation>` that inherits from `torch::nn::Module`
+ *
+ * The implementation is header-only because it is a class template.
+ */
 
-// Map enum to activation functor
-template <activation_type A>
-struct ActivationSelector;
+/**
+ * @brief Supported activation functions for hidden layers.
+ */
+enum class Activation { Relu, Tanh, Sigmoid, Linear };
 
-template <>
-struct ActivationSelector<activation_type::relu> { template <typename T> using type = ReluAct; };
-template <>
-struct ActivationSelector<activation_type::linear> { template <typename T> using type = LinearAct; };
-template <>
-struct ActivationSelector<activation_type::tanh> { template <typename T> using type = TanhAct; };
-template <>
-struct ActivationSelector<activation_type::sigmoid> { template <typename T> using type = SigmoidAct; };
+/**
+ * @brief Supported weight initialization strategies.
+ */
+enum class Initializer_weight {One, Uniform, Glorot_Uniform, He_Uniform, Glorot_Norm, He_Norm};
 
-template <activation_type A, typename T>
-class FNN{
-    private:
-        const std::vector<int> layer_size;
-        std::vector<Dense<T>> layers;  // Dense without Activation template
-        typename ActivationSelector<A>::template type <T> activation_function;
-        
-        // Storage for forward pass (for backpropagation)
-        mutable std::vector<vector_t<T>> layer_inputs;  // Stores input to each layer
+/**
+ * @brief Supported bias initialization strategies.
+ */
+enum class Initializer_bias {Constant, Uniform, Normal};
 
-    public:
-        FNN(const std::vector<int> & Layer_Size):layer_size(Layer_Size){
-            if (layer_size.size() < 2){
-                std::cerr << "The network must have at least an input and an output layer." << std::endl;
-                throw std::invalid_argument("Invalid layer size");
-            }
+/**
+ * @brief Fully-connected feed-forward neural network.
+ *
+ * @tparam A Activation used for all hidden layers. The last layer is linear.
+ *
+ * @details
+ * This class builds a sequence of `torch::nn::Linear` layers based on `layer_sizes`.
+ * Example: `{2, 50, 50, 1}` builds 3 linear layers: 2→50→50→1.
+ *
+ * Notes:
+ * - The network expects inputs of shape `[N, in_dim]`.
+ * - If a 1D tensor `[in_dim]` is provided, it is promoted to `[1, in_dim]`.
+ */
+template <Activation A>
+class FNN final : public torch::nn::Module {
+private:
+	std::vector<int64_t> layer_sizes_;
+	int depth;
+	torch::nn::ModuleList layers{nullptr};
 
-            // Create all layers uniformly
-            for (size_t i = 1; i < layer_size.size(); ++i){
-                layers.emplace_back(layer_size[i-1], layer_size[i]);
-            }
-            
-            // Reserve space for layer inputs
-            layer_inputs.resize(layer_size.size());
-        }
+	/**
+	 * @brief Apply the compile-time activation to a tensor.
+	 */
+	torch::Tensor apply_activation(const torch::Tensor& x) const{
+		if constexpr (A == Activation::Relu)
+			return torch::relu(x);
+		else if constexpr (A == Activation::Tanh)
+			return torch::tanh(x);
+		else if constexpr (A == Activation::Sigmoid)
+			return torch::sigmoid(x);
+		else
+			return x; // Linear
+	}
 
-        template <Initializer_weight Iw, Initializer_bias Ib>
-        void initialize(){
-            for (auto & layer : layers){
-                layer.template initialize<Iw, Ib>();
-            }
-        }
+	// torch::Tensor apply_activation(const torch::Tensor& x) const
+	// {
+	// 	switch (activation_){
+	// 		case Activation::Relu:    return torch::relu(x);
+	// 		case Activation::Tanh:    return torch::tanh(x);
+	// 		case Activation::Sigmoid: return torch::sigmoid(x);
+	// 		case Activation::Linear:
+	// 		default:                 return x;
+	// 	}
+	// }
 
-        // Forward pass
-        vector_t<T> forward(const vector_t<T> & input) const{
-            layer_inputs[0] = input;
-            vector_t<T> out = input;
-            
-            // Apply all layers: hidden layers with activation, last layer without
-            for(size_t i = 0; i < layers.size() - 1; ++i){
-                std::cout << "layer: " << i <<std::endl;
-                out = layers[i].forward(out);
-                out = activation_function(out);
-                layer_inputs[i + 1] = out;
-            }
-            
-            // Last layer: linear only (no activation)
-            out = layers.back().forward(out);
-            layer_inputs[layers.size()] = out;
-            
-            return out;
-        }
+public:
+	/**
+	 * @brief Default constructor.
+	 *
+	 * @warning The network is not usable until constructed with layer sizes.
+	 */
+	FNN() = default;
 
-        // Forward pass with a different scalar type than the stored parameters.
-        // Useful for autodiff on inputs without turning weights/bias into AD variables.
-        template <typename S>
-        vector_t<S> forward_mixed(const vector_t<S>& input) const{
-            vector_t<S> out = input;
+	/**
+	 * @brief Construct the network from layer sizes.
+	 *
+	 * @param layer_sizes Vector of layer widths. Example: `{2, 50, 50, 1}`.
+	 *
+	 * @throws std::invalid_argument if fewer than 2 sizes are provided.
+	 */
+	explicit FNN(const std::vector<int64_t>& layer_sizes): layer_sizes_(layer_sizes){
+		if(layer_sizes_.size() < 2)
+			throw std::invalid_argument("PINN requires at least input and output layer");
 
-            for(size_t i = 0; i < layers.size() - 1; ++i){
-                out = layers[i].forward(out);
-                out = activation_function(out);
-            }
+		layers = register_module("linear", torch::nn::ModuleList());
+		for(size_t i = 1; i < layer_sizes_.size(); ++i){
+			layers->push_back(torch::nn::Linear(
+				torch::nn::LinearOptions(layer_sizes_[i - 1], layer_sizes_[i])
+			));
+		}
 
-            out = layers.back().forward(out);
-            return out;
-        }
+		depth = layers->size();
+	}
 
+	/**
+	 * @brief Get the network layer sizes.
+	 */
+ 	const std::vector<int64_t>& get_layer_sizes() const { return layer_sizes_; }
 
-        
-        // // Compute gradients using autodiff (forward-mode automatic differentiation)
-        // std::vector<std::pair<matrix_t<T>, vector_t<T>>> backward(const vector_t<T>& grad_output)
-        // {
-        //     std::vector<std::pair<matrix_t<T>, vector_t<T>>> gradients(layers.size());
-            
-        //     // For each weight and bias, compute gradient using autodiff
-        //     for(size_t layer_idx = 0; layer_idx < layers.size(); ++layer_idx){
-        //         int n_out = layers[layer_idx].weights.rows();
-        //         int n_in = layers[layer_idx].weights.cols();
-                
-        //         matrix_t<T> grad_weights(n_out, n_in);
-        //         vector_t<T> grad_bias(n_out);
-                
-        //         // Compute gradient for each weight
-        //         for(int i = 0; i < n_out; ++i){
-        //             for(int j = 0; j < n_in; ++j){
-        //                 using autodiff::dual;
-                        
-        //                 // Create dual variable for this weight
-        //                 dual w_dual = layers[layer_idx].weights(i, j);
-        //                 w_dual.val = layers[layer_idx].weights(i, j);
-        //                 w_dual.der = 1.0;
-                        
-        //                 // Forward pass with perturbed weight
-        //                 dual out_dual = forward_with_dual_weight(layer_idx, i, j, w_dual);
-                        
-        //                 // Gradient is: grad_output^T * dout/dw
-        //                 grad_weights(i, j) = grad_output(layer_idx, 0) * out_dual.der;
-        //             }
-        //         }
-                
-        //         // Compute gradient for each bias
-        //         for(int i = 0; i < n_out; ++i){
-        //             using autodiff::dual;
-                    
-        //             dual b_dual = layers[layer_idx].bias(i);
-        //             b_dual.val = layers[layer_idx].bias(i);
-        //             b_dual.der = 1.0;
-                    
-        //             dual out_dual = forward_with_dual_bias(layer_idx, i, b_dual);
-                    
-        //             grad_bias(i) = grad_output(layer_idx, 0) * out_dual.der;
-        //         }
-                
-        //         gradients[layer_idx] = {grad_weights, grad_bias};
-        //     }
-            
-        //     return gradients;
-        // }
-        
-        // // Forward pass with dual weight for gradient computation
-        // template <typename DualType>
-        // DualType forward_with_dual_weight(size_t layer_idx, int w_row, int w_col, const DualType& w_dual) const
-        // {
-        //     vector_t<DualType> out = vector_t<DualType>(layer_inputs[layer_idx].size());
-        //     for(int i = 0; i < layer_inputs[layer_idx].size(); ++i){
-        //         out(i) = DualType(layer_inputs[layer_idx](i), 0.0);
-        //     }
-            
-        //     // Propagate through layers starting from layer_idx
-        //     for(size_t i = layer_idx; i < layers.size(); ++i){
-        //         vector_t<DualType> z(layers[i].weights.rows());
-        //         for(int r = 0; r < layers[i].weights.rows(); ++r){
-        //             z(r) = DualType(0.0, 0.0);
-        //             for(int c = 0; c < layers[i].weights.cols(); ++c){
-        //                 DualType w_val = (i == layer_idx && r == w_row && c == w_col) ? w_dual : DualType(layers[i].weights(r, c), 0.0);
-        //                 z(r) = z(r) + w_val * out(c);
-        //             }
-        //             z(r) = z(r) + DualType(layers[i].bias(r), 0.0);
-        //         }
-                
-        //         if(i < layers.size() - 1){
-        //             out = apply_activation_dual(z);
-        //         } else {
-        //             out = z;  // Last layer: no activation
-        //         }
-        //     }
-            
-        //     return out(0);
-        // }
-        
-        // // Forward pass with dual bias for gradient computation
-        // template <typename DualType>
-        // DualType forward_with_dual_bias(size_t layer_idx, int b_idx, const DualType& b_dual) const
-        // {
-        //     vector_t<DualType> out = vector_t<DualType>(layer_inputs[layer_idx].size());
-        //     for(int i = 0; i < layer_inputs[layer_idx].size(); ++i){
-        //         out(i) = DualType(layer_inputs[layer_idx](i), 0.0);
-        //     }
-            
-        //     // Propagate through layers starting from layer_idx
-        //     for(size_t i = layer_idx; i < layers.size(); ++i){
-        //         vector_t<DualType> z(layers[i].weights.rows());
-        //         for(int r = 0; r < layers[i].weights.rows(); ++r){
-        //             z(r) = DualType(0.0, 0.0);
-        //             for(int c = 0; c < layers[i].weights.cols(); ++c){
-        //                 z(r) = z(r) + DualType(layers[i].weights(r, c), 0.0) * out(c);
-        //             }
-        //             DualType b_val = (i == layer_idx && r == b_idx) ? b_dual : DualType(layers[i].bias(r), 0.0);
-        //             z(r) = z(r) + b_val;
-        //         }
-                
-        //         if(i < layers.size() - 1){
-        //             out = apply_activation_dual(z);
-        //         } else {
-        //             out = z;  // Last layer: no activation
-        //         }
-        //     }
-            
-        //     return out(0);
-        // }
-        
-        // // Apply activation with dual types (for autodiff)
-        // template <typename DualType>
-        // vector_t<DualType> apply_activation_dual(const vector_t<DualType>& z) const {
-        //     return ActivationSelector<A>::template type<DualType>::template apply<DualType>(z);
-        // }
-        
-        // // Update weights and biases
-        // void update_parameters(const std::vector<std::pair<matrix_t<T>, vector_t<T>>>& gradients, T learning_rate){
-        //     for(size_t i = 0; i < layers.size(); ++i){
-        //         layers[i].weights -= learning_rate * gradients[i].first;
-        //         layers[i].bias -= learning_rate * gradients[i].second;
-        //     }
-        // }
+	/**
+	 * @brief Get the activation configured for hidden layers.
+	 */
+	Activation get_activation() const { return A; }
 
-        void print(bool print_weights = false) const{
-            std::cout << "The network has shape: [ ";
-            for(size_t j=0; j<layer_size.size(); ++j){
-                std::cout << layer_size[j];
-                if (j + 1 < layer_size.size()) std::cout << ", ";
-            }
-            std::cout << " ]" << std::endl;
+	/**
+	 * @brief Forward pass.
+	 *
+	 * @param x Input tensor of shape `[N, in_dim]` or `[in_dim]`.
+	 * @return Output tensor of shape `[N, out_dim]`.
+	 */
+	torch::Tensor forward(torch::Tensor x){
+		// Accept x as [N, in_dim] or [in_dim]. Convert 1D -> [1, in_dim].
+		if(x.dim() == 1)
+			x = x.unsqueeze(0);
 
-            std::cout << "Layers: " << std::endl;
-            for (size_t i = 0; i < layers.size(); ++i){
-                std::string act_type;
-                if(i < layers.size() - 1){
-                    if constexpr (A == activation_type::relu) act_type = "relu";
-                    else if constexpr (A == activation_type::tanh) act_type = "tanh";
-                    else if constexpr (A == activation_type::sigmoid) act_type = "sigmoid";
-                    else act_type = "linear";
-                } 
-                else{
-                    act_type =  "linear/output";
-                }
-                std::cout << "Dense " << (i+1) << " " << act_type << " (" 
-                          << layer_size[i] << "x" << layer_size[i+1] << ")" << std::endl;
-                if (print_weights){
-                    layers[i].print();
-                }
-            }
-            std::cout << std::endl;
-        }
+		TORCH_CHECK(!layer_sizes_.empty(), "FNN is not initialized with layer sizes");
+		TORCH_CHECK(x.size(-1) == layer_sizes_.front(), "Expected input dim ", layer_sizes_.front(), ", got ", x.size(-1));
+
+		// const int64_t n_layers = static_cast<int64_t>(layers->size());
+		
+		for(size_t i = 0; i < depth; ++i){
+			x = layers[i]->as<torch::nn::Linear>()->forward(x);
+			if(i != depth - 1)
+				x = apply_activation(x);
+		}
+		return x;
+	}
+
+	/**
+	 * @brief Initialize all weights according to the selected strategy.
+	 * @tparam Iw Weight initializer.
+	 */
+	template <Initializer_weight Iw>
+	void initialize_weight();
+
+	/**
+	 * @brief Initialize all biases according to the selected strategy.
+	 * @tparam Ib Bias initializer.
+	 * @param constant_value Used only when `Ib == Initializer_bias::Constant`.
+	 */
+	template <Initializer_bias Ib>
+	void initialize_bias(const double constant_value = 0.0);
+
+	/**
+	 * @brief Initialize both weights and biases.
+	 * @tparam Iw Weight initializer.
+	 * @tparam Ib Bias initializer.
+	 * @param bias_constant_value Used only when `Ib == Initializer_bias::Constant`.
+	 */
+	template <Initializer_weight Iw, Initializer_bias Ib>
+	void initialize(const double bias_constant_value = 0.0){
+		initialize_weight<Iw>();
+		initialize_bias<Ib>(bias_constant_value);
+
+		return;
+	}
+
+	/**
+	 * @brief Print a human-readable summary of the network architecture.
+	 */
+	void print() const{
+		std::cout << "The network has shape: [ ";
+		for(size_t j=0; j<layer_sizes_.size(); ++j){
+			std::cout << layer_sizes_[j];
+			if (j + 1 < layer_sizes_.size()) std::cout << ", ";
+		}
+		std::cout << " ]" << std::endl;
+
+		std::cout << "Layers: " << std::endl;
+		for (size_t i = 1; i < layer_sizes_.size(); ++i){
+			std::string act_type;
+			if(i < layer_sizes_.size() - 1){
+				if constexpr (A == Activation::Relu) act_type = "relu";
+				else if constexpr (A == Activation::Tanh) act_type = "tanh";
+				else if constexpr (A == Activation::Sigmoid) act_type = "sigmoid";
+				else act_type = "linear";
+			} 
+			else{
+				act_type =  "linear/output";
+			}
+			std::cout << "Dense " << (i) << " " << act_type << " (" 
+						<< layer_sizes_[i-1] << "x" << layer_sizes_[i] << ")" << std::endl;
+		}
+		std::cout << std::endl;
+	}
 };
+
+template <Activation A>
+template <Initializer_weight Iw>
+void FNN<A>::initialize_weight(){
+	for(auto& m : modules(/*include_self=*/false)){
+		if(auto* lin = dynamic_cast<torch::nn::LinearImpl*>(m.get())){
+			const auto N_out = lin->weight.size(0);
+			const auto N_in  = lin->weight.size(1);
+
+			if constexpr (Iw == Initializer_weight::One){
+				torch::nn::init::ones_(lin->weight);
+			}
+			else if constexpr (Iw == Initializer_weight::Uniform){
+				// Uniform in [-1, 1]
+				torch::nn::init::uniform_(lin->weight, -1.0, 1.0);
+			}
+			else if constexpr (Iw == Initializer_weight::Glorot_Uniform){
+				double limit = std::sqrt(6.0 / static_cast<double>(N_in + N_out));
+				torch::nn::init::uniform_(lin->weight, -limit, limit);
+			}
+			else if constexpr (Iw == Initializer_weight::He_Uniform){
+				double limit = std::sqrt(6.0 / static_cast<double>(N_in));
+				torch::nn::init::uniform_(lin->weight, -limit, limit);
+			}
+			else if constexpr (Iw == Initializer_weight::Glorot_Norm){
+				double stddev = std::sqrt(2.0 / static_cast<double>(N_in + N_out));
+				torch::nn::init::normal_(lin->weight, 0.0, stddev);
+			}
+			else if constexpr (Iw == Initializer_weight::He_Norm){
+				double stddev = std::sqrt(2.0 / static_cast<double>(N_in));
+				torch::nn::init::normal_(lin->weight, 0.0, stddev);
+			}
+		}
+	}
+}
+
+template <Activation A>
+template <Initializer_bias Ib>
+void FNN<A>::initialize_bias(const double constant_value){
+	for(auto& m : modules(/*include_self=*/false)){
+		if(auto* lin = dynamic_cast<torch::nn::LinearImpl*>(m.get())){
+			if constexpr (Ib == Initializer_bias::Constant){
+				torch::nn::init::constant_(lin->bias, constant_value);
+			}
+			else if constexpr (Ib == Initializer_bias::Uniform){
+				// Uniform in [-1, 1]
+				torch::nn::init::uniform_(lin->bias, -1.0, 1.0);
+			}
+			else if constexpr (Ib == Initializer_bias::Normal){
+				// Normal with small std-dev
+				torch::nn::init::normal_(lin->bias, 0.0, 0.05);
+			}
+		}
+	}
+}
+
 #endif
