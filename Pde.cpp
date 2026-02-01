@@ -8,7 +8,25 @@
 #include <pybind11/numpy.h>
 #include "Pde.hpp"
 
+/**
+ * @file Pde.cpp
+ * @brief Implementation of the `Pde` data container.
+ *
+ * This file implements:
+ * - conversion utilities from NumPy arrays to CPU double tensors
+ * - point generation via DeepXDE geometry (Python)
+ * - loss term assembly (PDE + boundary conditions)
+ * - batch assembly/shuffling
+ */
+
 namespace { // anonymous namespace so this functions can only be used in this file
+/**
+ * @brief Convert a Python NumPy array (float64, C-contiguous) to a 2D CPU tensor.
+ * @param obj Python object convertible to a NumPy array.
+ * @return Tensor of shape `[N, D]` with dtype double on CPU.
+ *
+ * @throws std::runtime_error if `obj` is not 2D.
+ */
 tensor pyarray_to_tensor_2d_double(const py::handle& obj) {
 
     // Forcecast converts in float64 numpy array while c_style ensures the data to be row-major
@@ -40,6 +58,12 @@ tensor pyarray_to_tensor_2d_double(const py::handle& obj) {
     return out;
 }
 
+/**
+ * @brief Shuffle rows of a 2D CPU double tensor.
+ * @param X Input tensor `[N, D]` on CPU with dtype double.
+ * @param rng Random number generator used to shuffle indices.
+ * @return Shuffled copy of `X`.
+ */
 tensor permute_rows_cpu_double(const tensor& X, std::mt19937& rng) {
 
     // some checks
@@ -67,6 +91,9 @@ tensor permute_rows_cpu_double(const tensor& X, std::mt19937& rng) {
 }
 } // namespace
 
+/**
+ * @brief Construct dataset, sample training/test points, and initialize batch state.
+ */
 Pde::Pde(py::handle geom,
     std::function<std::vector<tensor>(const tensor&, const tensor&)> pde,
     std::vector<std::shared_ptr<Boundary_Condition>> bcs,
@@ -106,6 +133,7 @@ Pde::Pde(py::handle geom,
     };
 
 void Pde::generate_train_points(){
+    // Generates interior points and boundary points using the DeepXDE geometry.
     py::object X_py;
     py::object X_bc_py;
 
@@ -129,11 +157,11 @@ void Pde::generate_train_points(){
     train_x_pde.narrow(0, 0, num_domain).copy_(X);
     train_x_pde.narrow(0, num_domain, num_boundary).copy_(X_bc);
 
-    std::cout << "train_x_pde: " << train_x_pde.size(0) << " " << train_x_pde.size(1) << std::endl;
     return;
 }
 
 void Pde::generate_bc_points(){
+    // Generates collocation points for each boundary condition.
     int real_points_on_boundary = 0;
     for(size_t i = 0; i < bcs.size(); ++i){
         train_x_bc[i] = bcs[i]->collocation_points(train_x_pde);
@@ -145,11 +173,11 @@ void Pde::generate_bc_points(){
     }
     // reassign num_boundary
     num_boundary = real_points_on_boundary;
-    std::cout << " num_boundary " << num_boundary << std::endl;
     return;
 }
 
 void Pde::generate_test_points(){
+    // Generates test points (interior + boundary) used for monitoring generalization.
     if(num_test > 0){
         // the distribution here is random beacuse for same geometries the "uniform_point" function is not implemented
         py::object X_py = geom.attr("random_points")(num_test);
@@ -187,6 +215,8 @@ std::vector<tensor> Pde::losses(
     const tensor& outputs,
     const std::function<tensor(const tensor&)>& loss_fn
 ){
+    // This returns differentiable scalar tensors that can be summed and backpropagated.
+    // Layout: PDE losses first, then BC losses.
     // Validate shapes
     TORCH_CHECK(inputs.dim() == 2, "inputs must be 2D [N, dim]");
     TORCH_CHECK(outputs.dim() == 2, "outputs must be 2D [N, out_dim]");
@@ -276,16 +306,10 @@ std::vector<tensor> Pde::losses(
     return losses_val;
 }
 
-int Pde::total_bc_in_last_batch() const {
-    const std::vector<int>& nb = (training_batch_size > 0) ? num_bcs_batch : num_bcs;
-    int total = 0;
-    for (int v : nb) {
-        total += v;
-    }
-    return total;
-}
-
 tensor& Pde::train_next_batch(const int batch_size){
+
+    // Returns a contiguous tensor of training points.
+    // Batch layout is consistent with losses(): [BC0|BC1|...|PDE].
 
     if(batch_size == 0){
         // Full batch: cache concatenation

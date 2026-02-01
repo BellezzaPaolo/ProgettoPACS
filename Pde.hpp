@@ -1,5 +1,19 @@
-#pragma once
+#ifndef PDE_HPP
+#define PDE_HPP
 
+/**
+ * @file Pde.hpp
+ * @brief Dataset/geometry wrapper for PINNs (DeepXDE-like).
+ *
+ * This class owns:
+ * - a DeepXDE geometry handle (Python object)
+ * - collocation points for PDE residuals and boundary conditions
+ * - batching/shuffling logic
+ * - a user-provided PDE residual callback evaluated with LibTorch tensors
+ *
+ * The PDE itself is defined in C++ (typically as a lambda in `main.cpp`) and can
+ * use torch autograd to build residuals such as Laplacians.
+ */
 #include <vector>
 #include <memory>
 #include <functional>
@@ -9,9 +23,39 @@
 
 namespace py = pybind11;
 
+/// Alias used across the project for LibTorch tensors.
 using tensor = torch::Tensor;
 
-class __attribute__((visibility("hidden"))) Pde {
+/// \cond DOXYGEN_SHOULD_SKIP_THIS
+// These pragmas silence GCC's -Wattributes visibility warnings. See the note at
+// the end of this file for details.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+/// \endcond
+
+/**
+ * @brief PDE + BC data container and batching utility.
+ *
+ * @details
+ * This class mimics DeepXDE's `data.PDE` role: it stores training/test points
+ * and provides a `losses()` method that returns differentiable scalar tensors.
+ *
+ * Training batches are assembled in the following row order:
+ * @code
+ * [ BC0 | BC1 | ... | BC(k-1) | PDE ]
+ * @endcode
+ * so the first rows are reserved for boundary-condition points (grouped by BC)
+ * and the remaining rows are domain points for the PDE residual.
+ *
+ * @note
+ * The geometry and boundary-condition objects are backed by Python (pybind11).
+ * This means the Python interpreter must be initialized before constructing
+ * a `Pde` instance.
+ */
+
+class Pde {
 private:
     // Geometry interface (Python: geom)
     py::handle geom;
@@ -57,24 +101,84 @@ private:
 
     void generate_test_points();
 public:
-    // Constructor
+    /**
+     * @brief Construct the dataset and pre-generate training/test points.
+     *
+     * @param geom DeepXDE geometry object (Python handle).
+     * @param pde PDE residual callback. It must return a vector of residual tensors
+     *            with shape `[N, r_i]` where `N` is the number of input rows.
+     * @param bcs Boundary condition objects.
+     * @param Num_domain Number of interior/domain points requested.
+     * @param Num_boundary Number of boundary points requested.
+     * @param Num_test Number of test points requested (0 disables test set).
+     * @param train_distribution Distribution string forwarded to DeepXDE sampling.
+     */
     Pde(py::handle geom,
         std::function<std::vector<tensor>(const tensor&, const tensor&)> pde,
         std::vector<std::shared_ptr<Boundary_Condition>> bcs,
         int Num_domain, int Num_boundary, int Num_test = 4, std::string train_distribution = "Hammersley");
-
-    // Returns scalar tensors (PDE losses first, then BC losses). This is differentiable
-    // and can be used directly for torch backprop.
+    
+    /**
+     * @brief Get the test set points.
+     * @return Reference to a tensor of shape `[N_test, dim]`.
+     */
+    const tensor& get_test() const { return test; }
+    
+    /**
+     * @brief Compute differentiable scalar loss terms.
+     *
+     * @details
+     * Returns a vector of scalar tensors:
+     * - PDE loss terms first (one per PDE residual component returned by `pde`)
+     * - then one loss term per boundary condition
+     *
+     * The caller is expected to aggregate them (e.g. `torch::stack(losses).sum()`).
+     *
+     * @param inputs Input coordinates `[N, dim]`.
+     * @param outputs Network outputs `[N, out_dim]` evaluated at `inputs`.
+     * @param loss_fn Loss function applied to residual/error tensors.
+     * @return Vector of scalar tensors.
+     */
     std::vector<tensor> losses(
         const tensor& inputs,
         const tensor& outputs,
         const std::function<tensor(const tensor&)>& loss_fn
     );
 
-    // Build next training batch; if batch_size <= 0, use full set
+    /**
+     * @brief Return the next training batch.
+     *
+     * @details
+     * If `batch_size == 0`, this returns the full training set (cached after the
+     * first assembly). If `batch_size > 0`, it builds a batch that keeps BC/PDE
+     * proportions and ensures at least one point per BC when possible.
+     *
+     * @param batch_size Desired batch size. Use 0 for full batch.
+     * @return Reference to an internal contiguous tensor `[N_batch, dim]`.
+     */
     tensor& train_next_batch(const int batch_size = 0);
-
-    // Number of boundary-condition points in the most recently produced batch.
-    // This is useful when you need to split a batch into [BC | PDE] parts.
-    int total_bc_in_last_batch() const;
 };
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+/**
+ * @note Visibility warning (-Wattributes)
+ * Some toolchains compile third-party headers (e.g. pybind11) with hidden symbol
+ * visibility. Since `Pde` stores pybind11 types (e.g. `py::handle`) and possibly
+ * other types with different visibility, GCC may warn that `Pde` has “greater
+ * visibility” than the type of one of its fields.
+ *
+ * This matters mainly when exporting `Pde` as part of a shared-library ABI.
+ * In this project the executable is the main artifact, so we silence this
+ * warning locally to keep build output clean.
+ */
+// The warning was:
+// In file included from ./Desktop/ProgettoPACS/main.cpp:20:
+// ./ProgettoPACS/Pde.hpp:14:7: warning: ‘Pde’ declared with greater visibility than the type of its field ‘Pde::geom’ [-Wattributes]
+//    57 | class Pde {
+//       |       ^~~
+// ./ProgettoPACS/Pde.hpp:14:7: warning: ‘Pde’ declared with greater visibility than the type of its field ‘Pde::bcs’ [-Wattributes]
+
+#endif
