@@ -142,7 +142,6 @@ void Pde::generate_bc_points(){
 
         real_points_on_boundary += num_bcs[i];
 
-        std::cout << " bc "<< i << " num_bcs: " << num_bcs[i] << " train_x_bc[i] " << train_x_bc[i] <<std::endl;
     }
     // reassign num_boundary
     num_boundary = real_points_on_boundary;
@@ -183,10 +182,10 @@ void Pde::generate_test_points(){
     return;
 }
 
-std::vector<double> Pde::losses(
+std::vector<tensor> Pde::losses(
     const tensor& inputs,
     const tensor& outputs,
-    const std::function<double(const tensor&)>& loss_fn
+    const std::function<tensor(const tensor&)>& loss_fn
 ){
     // Validate shapes
     TORCH_CHECK(inputs.dim() == 2, "inputs must be 2D [N, dim]");
@@ -220,29 +219,34 @@ std::vector<double> Pde::losses(
     }
 
     // Collect all loss values (PDE losses first, then BC losses)
-    std::vector<double> losses_val;
+    std::vector<tensor> losses_val;
+
+    // Scalar 0 on the right device/dtype for empty segments.
+    tensor zero = torch::zeros({}, outputs.options());
 
     // PDE residuals on the remaining rows (after all BC points)
     const int pde_rows = static_cast<int>(inputs.size(0)) - total_bc;
-    std::vector<tensor> residuals;
-    
-    if (pde_rows > 0) {
-        // User-defined residual(s): vector of matrices
 
-        // tensor.narrow(int64_t dim, int64_t t_start, int64_t length)
-        //    returns a view of a tensor restricted to a contiguous slice along dim (0 = rows for a 2D tensor, 1 = columns) from t_start 
-        //    for length elements
-        // tensor inputs_pde = inputs.narrow(0, total_bc, pde_rows);
-        // tensor outputs_pde = outputs.narrow(0, total_bc, pde_rows);
-        residuals = pde(inputs.narrow(0, total_bc, pde_rows), outputs.narrow(0, total_bc, pde_rows));
-        
-        // Compute PDE losses using loss_fn
-        for (size_t i = 0; i < residuals.size(); ++i) {
-            // loss_fn takes (zeros, error) and returns a scalar loss
-            // matrix zeros = matrix::Zero(residuals[i].rows(), residuals[i].cols());
-            losses_val.push_back(loss_fn(residuals[i]));
+    // Important: call the PDE callback on the *full* (inputs, outputs) tensors.
+    // This guarantees that autograd sees a direct dependency between the tensor
+    // we differentiate (inputs) and the tensor we differentiate from (outputs).
+    // If we pass sliced views created later, PyTorch may treat them as "unused".
+    std::vector<tensor> residuals_full = pde(inputs, outputs);
+
+    for (size_t i = 0; i < residuals_full.size(); ++i) {
+        TORCH_CHECK(residuals_full[i].dim() == 2, "PDE residual must be 2D [N, n_res]");
+        TORCH_CHECK(residuals_full[i].size(0) == inputs.size(0), "PDE residual rows must match inputs rows");
+
+        if (pde_rows <= 0) {
+            losses_val.push_back(zero);
+            std::cout << "Warning! the number of rows realted to the pde are 0 or less" << std::endl;
+            continue;
         }
+
+        tensor r_pde = residuals_full[i].narrow(0, total_bc, pde_rows);
+        losses_val.push_back(loss_fn(r_pde));
     }
+    
 
     // Boundary condition errors
     // BC points in batch are arranged as: [BC0 | BC1 | ... | BCn]
@@ -256,12 +260,29 @@ std::vector<double> Pde::losses(
         // Compute BC error using the boundary condition object
         // bcs[i]->error expects: (train_x_all, inputs_batch, outputs_batch, beg, end)
         // where train_x_all is the full training set and beg, end index into the batch
-        tensor bc_err = bcs[i]->error(train_x, inputs, outputs, bcs_start[i], bcs_start[i + 1]);
-        
+        const int beg = bcs_start[i];
+        const int end = bcs_start[i + 1];
+        if (end <= beg) {
+            std::cout << "Warning! the number of rows realted to the boundary condition " << i <<" are 0 or less" << std::endl;
+            losses_val.push_back(zero);
+            continue;
+        }
+
+        tensor bc_err = bcs[i]->error(train_x, inputs, outputs, beg, end);
+
         losses_val.push_back(loss_fn(bc_err));
     }
     
     return losses_val;
+}
+
+int Pde::total_bc_in_last_batch() const {
+    const std::vector<int>& nb = (training_batch_size > 0) ? num_bcs_batch : num_bcs;
+    int total = 0;
+    for (int v : nb) {
+        total += v;
+    }
+    return total;
 }
 
 tensor& Pde::train_next_batch(const int batch_size){
@@ -343,7 +364,7 @@ tensor& Pde::train_next_batch(const int batch_size){
             num_bcs_batch[i] = std::min(got_bc + (residual_bc > 0 ), num_bcs[i] - idx_bc_prec[i]);
             residual_bc -= (residual_bc > 0);
             actual_bc += num_bcs_batch[i];
-            if(idx_bc_prec[i] >= num_bcs[i]){
+            if(idx_bc_prec[i] + num_bcs_batch[i] >= num_bcs[i]){
                 reshuffle = true;
             }
         }

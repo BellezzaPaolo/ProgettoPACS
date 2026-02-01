@@ -63,12 +63,18 @@ public:
         std::vector<std::shared_ptr<Boundary_Condition>> bcs,
         int Num_domain, int Num_boundary, int Num_test = 4, std::string train_distribution = "Hammersley");
 
-    std::vector<double> losses(
+    // Returns scalar tensors (PDE losses first, then BC losses). This is differentiable
+    // and can be used directly for torch backprop.
+    std::vector<tensor> losses(
         const tensor& inputs,
         const tensor& outputs,
-        const std::function<double(const tensor&)>& loss_fn
+        const std::function<tensor(const tensor&)>& loss_fn
     );
 
     // Build next training batch; if batch_size <= 0, use full set
     tensor& train_next_batch(const int batch_size = 0);
+
+    // Number of boundary-condition points in the most recently produced batch.
+    // This is useful when you need to split a batch into [BC | PDE] parts.
+    int total_bc_in_last_batch() const;
 };
