@@ -27,16 +27,16 @@ namespace { // anonymous namespace so this functions can only be used in this fi
  *
  * @throws std::runtime_error if `obj` is not 2D.
  */
-tensor pyarray_to_tensor_2d_double(const py::handle& obj) {
+tensor pyarray_to_tensor_2d_float(const py::handle& obj) {
 
-    // Forcecast converts in float64 numpy array while c_style ensures the data to be row-major
+    // Forcecast converts in float32 numpy array while c_style ensures the data to be row-major
     // ordered. 
     // template<typename T>
     //  T reinterpret_borrow(handle h):
     //      Declare that a handle or PyObject * is a certain type and borrow the reference. 
     //      The target type T must be object or one of its derived classes. The function doesn’t do any conversions or checks.
-    py::array_t<double, py::array::c_style | py::array::forcecast> arr =
-        py::reinterpret_borrow<py::object>(obj).cast<py::array_t<double, py::array::c_style | py::array::forcecast>>();
+    py::array_t<float, py::array::c_style | py::array::forcecast> arr =
+        py::reinterpret_borrow<py::object>(obj).cast<py::array_t<float, py::array::c_style | py::array::forcecast>>();
 
     // simple check of the dimensions
     py::buffer_info info = arr.request();
@@ -48,13 +48,13 @@ tensor pyarray_to_tensor_2d_double(const py::handle& obj) {
     const int64_t n = static_cast<int64_t>(info.shape[0]);
     const int64_t d = static_cast<int64_t>(info.shape[1]);
 
-    tensor out = torch::empty({n, d}, torch::dtype(torch::kDouble).device(torch::kCPU));
+    tensor out = torch::empty({n, d}, torch::dtype(torch::kFloat32).device(torch::kCPU));
 
     // void* memcpy( void* dest, const void* src, std::size_t count );
 	//      Performs the following operations in order:
     //         - Implicitly creates objects at dest.
     //         - Copies count characters (as if of type unsigned char) from the object pointed to by src into the object pointed to by dest. 
-    std::memcpy(out.data_ptr<double>(), info.ptr, static_cast<size_t>(n * d) * sizeof(double));
+    std::memcpy(out.data_ptr<float>(), info.ptr, static_cast<size_t>(n * d) * sizeof(float));
     return out;
 }
 
@@ -64,12 +64,11 @@ tensor pyarray_to_tensor_2d_double(const py::handle& obj) {
  * @param rng Random number generator used to shuffle indices.
  * @return Shuffled copy of `X`.
  */
-tensor permute_rows_cpu_double(const tensor& X, std::mt19937& rng) {
+tensor permute_rows_cpu(const tensor& X, std::mt19937& rng) {
 
     // some checks
-    TORCH_CHECK(X.device().is_cpu(), "permute_rows_cpu_double expects CPU tensor");
-    TORCH_CHECK(X.scalar_type() == torch::kDouble, "permute_rows_cpu_double expects double tensor");
-    TORCH_CHECK(X.dim() == 2, "permute_rows_cpu_double expects 2D tensor");
+    TORCH_CHECK(X.device().is_cpu(), "permute_rows_cpu expects CPU tensor");
+    TORCH_CHECK(X.dim() == 2, "permute_rows_cpu expects 2D tensor");
 
     const int64_t n = X.size(0);
     if (n <= 1) {
@@ -108,7 +107,7 @@ Pde::Pde(py::handle geom,
 
         phisical_dim = geom.attr("dim").cast<int>();
         // initialize structures to store training set
-        train_x_pde = torch::zeros({num_domain + num_boundary, phisical_dim}, torch::dtype(torch::kDouble));
+        train_x_pde = torch::zeros({num_domain + num_boundary, phisical_dim}, torch::dtype(torch::kFloat32));
         train_x_bc.resize(bcs.size());
         num_bcs.resize(bcs.size());
         
@@ -118,12 +117,12 @@ Pde::Pde(py::handle geom,
         is_train_x_initialized = false;
 
         if(num_test > 0){
-            test = torch::zeros({num_test + num_boundary, phisical_dim}, torch::dtype(torch::kDouble));
+            test = torch::zeros({num_test + num_boundary, phisical_dim}, torch::dtype(torch::kFloat32));
             generate_test_points();
         }
 
         // train_x is built dynamically (full set or batches)
-        train_x = torch::empty({0, phisical_dim}, torch::dtype(torch::kDouble));
+        train_x = torch::empty({0, phisical_dim}, torch::dtype(torch::kFloat32));
 
         idx_pde_prec = 0;
         idx_bc_prec.resize(bcs.size());
@@ -146,8 +145,8 @@ void Pde::generate_train_points(){
         X_bc_py = geom.attr("random_boundary_points")(num_boundary, train_distribution);
     }
 
-    tensor X = pyarray_to_tensor_2d_double(X_py);
-    tensor X_bc = pyarray_to_tensor_2d_double(X_bc_py);
+    tensor X = pyarray_to_tensor_2d_float(X_py);
+    tensor X_bc = pyarray_to_tensor_2d_float(X_bc_py);
     TORCH_CHECK(X.size(1) == phisical_dim, "Geometry returned wrong dimension for domain points");
     TORCH_CHECK(X_bc.size(1) == phisical_dim, "Geometry returned wrong dimension for boundary points");
 
@@ -181,7 +180,7 @@ void Pde::generate_test_points(){
     if(num_test > 0){
         // the distribution here is random beacuse for same geometries the "uniform_point" function is not implemented
         py::object X_py = geom.attr("random_points")(num_test);
-        tensor X = pyarray_to_tensor_2d_double(X_py);
+        tensor X = pyarray_to_tensor_2d_float(X_py);
         TORCH_CHECK(X.size(1) == phisical_dim, "Geometry returned wrong dimension for test points");
 
         // tensor.narrow(int64_t dim, int64_t t_start, int64_t length)
@@ -398,6 +397,9 @@ tensor& Pde::train_next_batch(const int batch_size){
         const int got_pde = pde_end - idx_pde_prec;
 
         const int64_t total_rows = actual_bc + static_cast<int64_t>(got_pde);
+
+        is_train_x_initialized = false;
+        
         train_x = train_x.resize_({total_rows, phisical_dim});
 
         int64_t offset = 0;
@@ -429,11 +431,11 @@ tensor& Pde::train_next_batch(const int batch_size){
 
             // Permute BC set
             for(size_t i = 0; i < train_x_bc.size(); ++i){
-                train_x_bc[i] = permute_rows_cpu_double(train_x_bc[i].to(torch::kCPU).contiguous(), rng);
+                train_x_bc[i] = permute_rows_cpu(train_x_bc[i].to(torch::kCPU).contiguous(), rng);
                 idx_bc_prec[i] = 0;
             }
             // Permute PDE set
-            train_x_pde = permute_rows_cpu_double(train_x_pde.to(torch::kCPU).contiguous(), rng);
+            train_x_pde = permute_rows_cpu(train_x_pde.to(torch::kCPU).contiguous(), rng);
             
             idx_pde_prec = 0;
 
