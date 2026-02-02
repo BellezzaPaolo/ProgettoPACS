@@ -2,6 +2,16 @@
 #include <pybind11/numpy.h>
 #include <algorithm>
 
+/**
+ * @file Boundary_Condition.cpp
+ * @brief Implementation of generic boundary-point selection.
+ *
+ * The base `Boundary_Condition` provides:
+ * - `filter(X)`: selects points on the boundary using the Python geometry mask
+ *   (`geom.on_boundary`) and the user-provided predicate `on_boundary`.
+ * - `collocation_points(X)`: currently equal to `filter(X)`.
+ */
+
 tensor Boundary_Condition::filter(const tensor& X) const {
     // X is assumed to be of shape [N, dim]
     TORCH_CHECK(X.dim() == 2, "Boundary_Condition::filter expects X to be 2D [N, dim]");
@@ -9,7 +19,7 @@ tensor Boundary_Condition::filter(const tensor& X) const {
     const auto N = X.size(0);
     const auto dim = X.size(1);
 
-    // Convert X to a NumPy array for calling geom.on_boundary (deepxde-style API).
+    // Convert X to a NumPy array for calling geom.on_boundary (DeepXDE-style API).
     py::array_t<double> X_np({N, dim});
     auto buf = X_np.mutable_unchecked<2>();
     auto X_cpu = X.to(torch::kCPU).contiguous();

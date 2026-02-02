@@ -6,6 +6,15 @@
 #include <pybind11/embed.h>
 #include <torch/torch.h>
 
+/**
+ * @file Boundary_Condition.hpp
+ * @brief Abstract boundary-condition interface (DeepXDE-like) for PINNs.
+ *
+ * Boundary conditions are responsible for:
+ * - selecting boundary collocation points from a candidate set
+ * - computing an error tensor (residual) that will be converted to a scalar loss
+ */
+
 namespace py = pybind11;
 
 using tensor = torch::Tensor;
@@ -45,15 +54,25 @@ public:
     
     /**
      * @brief Filter points that are on the boundary.
-     * @param X Input points matrix (N x dim).
-     * @return Filtered points that satisfy the boundary condition.
+        *
+        * @details
+        * This method calls the Python geometry predicate `geom.on_boundary(X)` to get
+        * a boolean mask and then applies the user-provided `on_boundary(x_i, mask_i)`
+        * callback to decide which points to keep.
+        *
+        * @param X Input points matrix `[N, dim]`.
+        * @return Filtered points of shape `[M, dim]` with `M <= N`.
      */
     virtual tensor filter(const tensor& X) const;
     
     /**
      * @brief Get collocation points (points where Boundary_Condition is enforced).
-     * @param X Input points matrix.
-     * @return Collocation points on the boundary.
+        *
+        * @details
+        * Default implementation delegates to `filter(X)`.
+        *
+        * @param X Input points matrix `[N, dim]`.
+        * @return Collocation points on the boundary `[M, dim]`.
      */
     virtual tensor collocation_points(const tensor& X) const;
     
@@ -61,13 +80,12 @@ public:
      * @brief Compute the loss/error for this boundary condition.
      * Pure virtual method - must be implemented by derived classes.
      * 
-     * @param X Points on the boundary.
-     * @param inputs Network inputs.
-     * @param outputs Network outputs.
-     * @param beg Beginning index.
-     * @param end Ending index.
-     * @param aux_var Auxiliary variables (optional, default: nullptr).
-     * @return Error vector of size (end-beg) x 1.
+        * @param X Full set of training points (DeepXDE-style: `train_x_all`).
+        * @param inputs Batch input points `[N_batch, dim]`.
+        * @param outputs Network outputs evaluated at `inputs`, shape `[N_batch, out_dim]`.
+        * @param beg Beginning row (inclusive) of this BC segment inside the batch.
+        * @param end Ending row (exclusive) of this BC segment inside the batch.
+        * @return Error tensor of shape `[end-beg, 1]`.
      */
     virtual tensor error(const tensor& X, 
                           const tensor& inputs, 

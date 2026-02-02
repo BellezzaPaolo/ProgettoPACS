@@ -3,6 +3,11 @@
 #include <stdexcept>
 #include <algorithm>
 
+/**
+ * @file Dirichlet_BC.cpp
+ * @brief Implementation of the Dirichlet boundary condition.
+ */
+
 Dirichlet_BC::~Dirichlet_BC() = default;
 
 tensor Dirichlet_BC::error(const tensor& X, 
