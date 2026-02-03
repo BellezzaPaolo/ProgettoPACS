@@ -11,9 +11,9 @@ main
 build/
 deepxde/
 __pycache__/
-python_implementation/results/
+python_src/results/
 results/*
 html/
 latex/
 
-python_implementation/Copy_files_to_track.sh
+python_src/Copy_files_to_track.sh
