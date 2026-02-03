@@ -62,20 +62,45 @@ int main(){
 
     auto pde = std::make_shared<Pde>(geom, pde_equation, bc_vector, /*Num_domain=*/1200, /*Num_boundary=*/120, /*Num_test=*/1500);
 
-    const double lr = 0.1;
-    const int iterations = int(1e5);
+    const std::vector<int> n_fine = {10, 50, 100, 500, 1000, 2000};
+    const std::vector<double> lr = {0.1, 0.01, 0.001, 0.0001};
+    const std::vector<int> budgets = {int(1e5),int(1e6),int(1e7),int(1e8)};
     const int batch_size = 0;
 
-    Model<FNN<Activation::Tanh>> model(pde, net);
-    model.compile("SGD", lr, /*loss=*/"MSE", /*verbose=*/true);
-    // model.compile("ParaFlowS", lr,/*n_fine = */ 100, /*loss=*/"MSE", /*verbose=*/true);
-    Result res = model.train(iterations, batch_size, /*budget=*/iterations, true);
+    // Write results in the same CSV schema used by the Python experiments.
+    // Path is anchored to the source tree even when running from build/.
+    const auto project_root = std::filesystem::path(__FILE__).parent_path();
+    std::string filename = "Poisson_Lshape_" + std::to_string(batch_size) + ".csv";
+    const auto csv_path = project_root /"results" / filename;
 
-    std::cout << "Training done. epoch=" << res.epoch
-              << " final_loss=" << res.final_loss
-              << " budget_used=" << res.budget_used
-              << " time_ms=" << res.total_time_ms
-              << std::endl;
+    Model<FNN<Activation::Tanh>> model(pde, net);
+
+    for(size_t i=0; i< lr.size();++i){
+        for(size_t j = 0; j < budgets.size();++j){
+            dde.attr("config").attr("set_random_seed")(123); 
+            net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
+            model.compile("SGD", lr[i], /*loss=*/"MSE", /*verbose=*/false);
+            Result res = model.train(budgets[j], batch_size, /*budget=*/budgets[j], false);
+            model.save_data(csv_path, res);
+
+            for(size_t k = 0; k < n_fine.size(); ++k){
+                dde.attr("config").attr("set_random_seed")(123); 
+                net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
+                model.compile("ParaFlowS", lr[i],/*n_fine = */ n_fine[k], /*loss=*/"MSE", /*verbose=*/false);
+                Result res = model.train(budgets[j], batch_size, /*budget=*/budgets[j], false);
+                model.save_data(csv_path, res);
+
+            }
+            std::cout << "Ended test for learning rate = " << lr[i] << " and budget = " << budgets[j] << std::endl;
+
+        }
+    }
+
+    // std::cout << "Training done. epoch = " << res.epoch
+    //           << " final_loss = " << res.final_loss
+    //           << " budget_used = " << res.budget_used
+    //           << " time_ms = " << res.total_time_ms
+    //           << std::endl;
 
     return 0;
 }

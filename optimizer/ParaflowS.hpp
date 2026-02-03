@@ -201,8 +201,9 @@ public:
     }
 
     Result train(int batch_size, int budget, int max_iterations, bool verbose) override {
-        std::cout << "Starting optimization with ParaFlowS..." << std::endl;
-
+        if (verbose){
+            std::cout << "Starting optimization with ParaFlowS..." << std::endl;
+        }
         // Training is fully in C++/torch; release GIL to avoid blocking embedded Python.
         py::gil_scoped_release no_gil;
 
@@ -262,6 +263,15 @@ public:
                     }
                 }
 
+                if (budget > 0 && this->budget_used >= budget) {
+                    res.epoch = it;
+                    stay = false;
+                    break;
+                }
+
+                loss_coarse = coarse_solver(/*batch_size=*/0);
+                // std::cout << "loss coarse = " << loss_coarse << std::endl;
+
                 if (loss_coarse <= loss_fine || j == 0) {
                     // save iteration
                     {
@@ -284,13 +294,6 @@ public:
                     stay = false;
                     break;
                 }
-                if (budget > 0 && this->budget_used >= budget) {
-                    res.epoch = it + 1;
-                    stay = false;
-                    break;
-                }
-
-                loss_coarse = coarse_solver(/*batch_size=*/0);
             }
 
             if (verbose && (it % 1 == 0)) {
@@ -307,6 +310,8 @@ public:
                     std::cout << "it =" << it
                             << " loss =" << loss_fine
                             << " loss_test =" << loss_test
+                            << " lr = " << this -> lr_fine
+                            << " n_fine = " << this-> n_fine
                             << std::endl;
 
                 }
@@ -334,6 +339,15 @@ public:
         res.total_time_ms = static_cast<double>(
             std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count());
         res.budget_used = this->budget_used;
+        res.budget = budget;
+        if (batch_size == 0){
+            res.batch_size = full_x_ref.size(0);
+        }
+        else{
+            res.batch_size = batch_size;
+        }
+        res.n_fine = this->n_fine;
+        res.lr = this->lr_fine;
         return res;
     }
 

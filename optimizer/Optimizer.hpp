@@ -19,6 +19,10 @@ struct Result {
     double final_loss = 0.0;
     int epoch = 0;
     double total_time_ms = 0.0;
+    int budget = 0;
+    int batch_size = 0;
+    int n_fine = 0; // if the optimizer doesn't use it, this 0 will be the sign
+    double lr = 0;
 };
 
 template <class NetT>

@@ -6,11 +6,13 @@ main
 *.json
 *.dat
 *.pdf
+*.csv
 
 build/
 deepxde/
 __pycache__/
 python_implementation/results/
+results/*
 html/
 latex/
 
