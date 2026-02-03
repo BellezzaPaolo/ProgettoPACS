@@ -49,13 +49,20 @@ using ResidualLossFn = std::function<tensor(const tensor& r)>;
  * like `torch::mse_loss(y_pred, y_true)`.
  */
 inline ResidualLossFn get_loss(const std::string& identifier) {
-    // It's important to notice that by construction the values 
-    // that arrive here are already the errors and this is the reason why I don't use the built-in functions of torch
-    // that would require another tensor intitialized to 0 as DeepXDE does
+    /**
+     * @details
+     * In this codebase the values passed here are already residuals/errors.
+     * We therefore implement the loss directly on the residual to avoid
+     * allocating an explicit zero target tensor (as APIs like `torch::mse_loss`
+     * would require).
+     */
 
     if (identifier == "mean squared error" || identifier == "MSE" || identifier == "mse") {
-        // testing, it gets that takes less in mean but with higher variance than:
-        // return torch::mse_loss(r, torch::zeros_like(r))
+        /**
+         * @note
+         * This is equivalent to `torch::mse_loss(r, zeros_like(r))` but avoids the
+         * extra allocation for the zero tensor.
+         */
         return [](const tensor& r) { return r.square().mean(); };
     }
     if (identifier == "mean absolute error" || identifier == "MAE" || identifier == "mae") {

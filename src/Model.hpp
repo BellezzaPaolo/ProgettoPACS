@@ -29,30 +29,38 @@
 #include "optimizer/Gradient_Descent.hpp"
 #include "optimizer/ParaflowS.hpp"
 
-// Minimal "Model" wrapper (in the spirit of DeepXDE's Model): it holds
-// the data object, the neural network, and an optimizer/trainer.
-//
-// Design choice: Model::train() is just a thin wrapper that calls the
-// real training loop implemented in optimizer_->train(...).
-//
-// The PDE itself remains a lambda in main.cpp and is stored inside Pde.
+/**
+ * @details
+ * Minimal "Model" wrapper (in the spirit of DeepXDE's `Model`): it holds
+ * the data object, the neural network, and an optimizer/trainer.
+ *
+ * Design choice: `Model::train()` is a thin wrapper that delegates to the
+ * real training loop implemented in `Optimizer::train(...)`.
+ *
+ * The PDE residual itself remains a callable (typically a lambda in `main.cpp`)
+ * stored inside `Pde`.
+ */
 template <class NetT>
 class Model {
 private:
     std::shared_ptr<Pde> data;
     std::shared_ptr<NetT> net;
 
-    // Compile-time settings (similar to DeepXDE)
+    /** @brief Compile-time settings (similar to DeepXDE). */
     std::string opt_name;
     double lr;
     std::string loss_name;
 
-
-    // Stored for possible inspection/debug; the optimizer also keeps its own copy.
+    /**
+     * @brief Stored for possible inspection/debug.
+     * @details The optimizer also keeps its own copy.
+     */
     std::function<tensor(const tensor&)> loss_fn;
 
-    // Project optimizer interface (created at compile time).
-    // Concrete type also inherits from torch::optim::*.
+    /**
+     * @brief Project optimizer interface created in `compile()`.
+     * @details The concrete type may also wrap a `torch::optim::*` instance.
+     */
     std::shared_ptr<Optimizer<NetT>> opt;
 
 public:
@@ -89,7 +97,7 @@ public:
 
         this->loss_fn = losses::get_loss(loss);
 
-        // Optimizer
+        /** @details Instantiate the requested optimizer implementation. */
         if (optimizer_name == "ParaFlowS"){
             throw std::runtime_error("Model::compile: ParaFlowS requires n_fine. Use compile(optimizer, lr, n_fine, ...)");
         }
@@ -219,37 +227,6 @@ public:
             << std::setprecision(12) << time_train_s
             << '\n';
     }
-
-    // void compile(
-    //     const std::string& optimizer_name, double lr, int n_fine, const std::string& loss = "MSE", int verbose = 1) {
-    //     opt_name = optimizer_name;
-    //     this->lr = lr;
-    //     loss_name = loss;
-
-    //     std::function<tensor(const tensor&)> loss_fn = losses::get_loss(loss);
-
-    //     // Optimizer
-    //     if (optimizer_name != "ParaFlowS"){
-    //         throw std::runtime_error("Only the ParaFlowS optimizer uses n_fine passes, your optimizer is " + optimizer_name);
-    //     }
-
-    //     throw std::runtime_error("ParaFlowS is not wired to the torch PINN pipeline yet.");
-
-    // }
-
-    // // Simple training loop using torch autograd + Pde::losses.
-    // // Sums all loss terms; if loss_weights were provided in compile(), applies them.
-    // void train(int iterations, int batch_size = 0) {
-    //     if (!opt_) {
-    //         throw std::runtime_error("Model::train: call compile() before train()");
-    //     }
-    //     if (!loss_fn_) {
-    //         throw std::runtime_error("Model::train: loss function not initialized (call compile())");
-    //     }
-
-    //     // Delegate the training loop to the optimizer/trainer.
-    //     opt_->train(*data_, *net_, loss_fn_, iterations, batch_size, loss_weights_, verbose_);
-    // }
 };
 
 #endif

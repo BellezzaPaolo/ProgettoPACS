@@ -13,60 +13,58 @@
  * @brief Implementation of the `Pde` data container.
  *
  * This file implements:
- * - conversion utilities from NumPy arrays to CPU double tensors
+ * - conversion utilities from NumPy arrays to CPU float32 tensors
  * - point generation via DeepXDE geometry (Python)
  * - loss term assembly (PDE + boundary conditions)
  * - batch assembly/shuffling
  */
 
-namespace { // anonymous namespace so this functions can only be used in this file
 /**
- * @brief Convert a Python NumPy array (float64, C-contiguous) to a 2D CPU tensor.
+ * @brief Internal helpers (file-local).
+ * @details Placed in an anonymous namespace so they are only visible in this translation unit.
+ */
+namespace {
+/**
+ * @brief Convert a Python NumPy array to a 2D CPU tensor (float32, C-contiguous).
  * @param obj Python object convertible to a NumPy array.
- * @return Tensor of shape `[N, D]` with dtype double on CPU.
+ * @return Tensor of shape `[N, D]` with dtype float32 on CPU.
  *
  * @throws std::runtime_error if `obj` is not 2D.
  */
 tensor pyarray_to_tensor_2d_float(const py::handle& obj) {
-
-    // Forcecast converts in float32 numpy array while c_style ensures the data to be row-major
-    // ordered. 
-    // template<typename T>
-    //  T reinterpret_borrow(handle h):
-    //      Declare that a handle or PyObject * is a certain type and borrow the reference. 
-    //      The target type T must be object or one of its derived classes. The function doesn’t do any conversions or checks.
+    /**
+     * @details
+     * `forcecast` converts input to float32 when needed.
+     * `c_style` ensures row-major contiguous layout.
+     */
     py::array_t<float, py::array::c_style | py::array::forcecast> arr =
         py::reinterpret_borrow<py::object>(obj).cast<py::array_t<float, py::array::c_style | py::array::forcecast>>();
 
-    // simple check of the dimensions
+    /** @details Validate that the NumPy array is 2D. */
     py::buffer_info info = arr.request();
     if (info.ndim != 2) {
         throw std::runtime_error("Expected a 2D numpy array for geometry points");
     }
 
-    // get dimensions
+    /** @details Read array dimensions. */
     const int64_t n = static_cast<int64_t>(info.shape[0]);
     const int64_t d = static_cast<int64_t>(info.shape[1]);
 
     tensor out = torch::empty({n, d}, torch::dtype(torch::kFloat32).device(torch::kCPU));
 
-    // void* memcpy( void* dest, const void* src, std::size_t count );
-	//      Performs the following operations in order:
-    //         - Implicitly creates objects at dest.
-    //         - Copies count characters (as if of type unsigned char) from the object pointed to by src into the object pointed to by dest. 
+    /** @details Fast contiguous copy from NumPy buffer into the torch tensor. */
     std::memcpy(out.data_ptr<float>(), info.ptr, static_cast<size_t>(n * d) * sizeof(float));
     return out;
 }
 
 /**
- * @brief Shuffle rows of a 2D CPU double tensor.
- * @param X Input tensor `[N, D]` on CPU with dtype double.
+ * @brief Shuffle rows of a 2D CPU tensor.
+ * @param X Input tensor `[N, D]` on CPU.
  * @param rng Random number generator used to shuffle indices.
  * @return Shuffled copy of `X`.
  */
 tensor permute_rows_cpu(const tensor& X, std::mt19937& rng) {
-
-    // some checks
+    /** @details Validate device/shape assumptions. */
     TORCH_CHECK(X.device().is_cpu(), "permute_rows_cpu expects CPU tensor");
     TORCH_CHECK(X.dim() == 2, "permute_rows_cpu expects 2D tensor");
 
@@ -76,16 +74,13 @@ tensor permute_rows_cpu(const tensor& X, std::mt19937& rng) {
     }
 
     std::vector<int64_t> perm(static_cast<size_t>(n));
-    // void iota( ForwardIt first, ForwardIt last, T value ):
-    //      Fills the range [first, last) with sequentially increasing values, starting with
-    //      value and repetitively evaluating ++value
+    /** @details Build an index permutation and shuffle it. */
     std::iota(perm.begin(), perm.end(), 0);
-    // void shuffle( RandomIt first, RandomIt last, URBG&& g );
     std::shuffle(perm.begin(), perm.end(), rng);
 
-    // convert the vector into torch tensor
+    /** @details Convert the permutation into an index tensor. */
     tensor idx = torch::from_blob(perm.data(), {n}, torch::TensorOptions().dtype(torch::kLong)).clone();
-    // returns the selected index
+    /** @details Return the row-permuted tensor. */
     return X.index_select(0, idx);
 }
 } // namespace
@@ -106,12 +101,12 @@ Pde::Pde(py::handle geom,
         }
 
         phisical_dim = geom.attr("dim").cast<int>();
-        // initialize structures to store training set
+        /** @details Initialize structures to store the training set. */
         train_x_pde = torch::zeros({num_domain + num_boundary, phisical_dim}, torch::dtype(torch::kFloat32));
         train_x_bc.resize(bcs.size());
         num_bcs.resize(bcs.size());
         
-        // Generate training and BC points once
+        /** @details Generate training and boundary-condition points once. */
         generate_train_points();
         generate_bc_points();
         is_train_x_initialized = false;
@@ -121,18 +116,19 @@ Pde::Pde(py::handle geom,
             generate_test_points();
         }
 
-        // train_x is built dynamically (full set or batches)
+        /** @details `train_x` is built dynamically (full set or batches). */
         train_x = torch::empty({0, phisical_dim}, torch::dtype(torch::kFloat32));
 
         idx_pde_prec = 0;
         idx_bc_prec.resize(bcs.size());
         epoch_seed = 123;
-        num_bcs_batch.resize(bcs.size()); // sizes for current batch BC splits
+        /** @details Sizes for the current batch BC splits. */
+        num_bcs_batch.resize(bcs.size());
         training_batch_size = 0;
     };
 
 void Pde::generate_train_points(){
-    // Generates interior points and boundary points using the DeepXDE geometry.
+    /** @brief Generate interior and boundary points using the DeepXDE geometry. */
     py::object X_py;
     py::object X_bc_py;
 
@@ -150,9 +146,7 @@ void Pde::generate_train_points(){
     TORCH_CHECK(X.size(1) == phisical_dim, "Geometry returned wrong dimension for domain points");
     TORCH_CHECK(X_bc.size(1) == phisical_dim, "Geometry returned wrong dimension for boundary points");
 
-    // tensor.narrow(int64_t dim, int64_t t_start, int64_t length)
-    //    returns a view of a tensor restricted to a contiguous slice along dim (0 = rows for a 2D tensor, 1 = columns) from t_start 
-    //    for length elements
+    /** @details Copy into the preallocated `train_x_pde` buffer via `narrow()` views. */
     train_x_pde.narrow(0, 0, num_domain).copy_(X);
     train_x_pde.narrow(0, num_domain, num_boundary).copy_(X_bc);
 
@@ -160,7 +154,7 @@ void Pde::generate_train_points(){
 }
 
 void Pde::generate_bc_points(){
-    // Generates collocation points for each boundary condition.
+    /** @brief Generate collocation points for each boundary condition. */
     int real_points_on_boundary = 0;
     for(size_t i = 0; i < bcs.size(); ++i){
         train_x_bc[i] = bcs[i]->collocation_points(train_x_pde);
@@ -170,22 +164,20 @@ void Pde::generate_bc_points(){
         real_points_on_boundary += num_bcs[i];
 
     }
-    // reassign num_boundary
+    /** @details Reassign `num_boundary` to the actual count after filtering. */
     num_boundary = real_points_on_boundary;
     return;
 }
 
 void Pde::generate_test_points(){
-    // Generates test points (interior + boundary) used for monitoring generalization.
+    /** @brief Generate test points (interior + boundary) used for monitoring generalization. */
     if(num_test > 0){
-        // the distribution here is random beacuse for same geometries the "uniform_point" function is not implemented
+        /** @details Use random distribution: some geometries do not implement uniform sampling. */
         py::object X_py = geom.attr("random_points")(num_test);
         tensor X = pyarray_to_tensor_2d_float(X_py);
         TORCH_CHECK(X.size(1) == phisical_dim, "Geometry returned wrong dimension for test points");
 
-        // tensor.narrow(int64_t dim, int64_t t_start, int64_t length)
-        //    returns a view of a tensor restricted to a contiguous slice along dim (0 = rows for a 2D tensor, 1 = columns) from t_start 
-        //    for length elements
+        /** @details Copy interior test points into the first block. */
         test.narrow(0, 0, num_test).copy_(X);
 
         int64_t row = num_test;
@@ -196,9 +188,7 @@ void Pde::generate_test_points(){
             }
             TORCH_CHECK(row + r <= test.size(0), "Test tensor is too small for boundary points");
 
-            // tensor.narrow(int64_t dim, int64_t t_start, int64_t length)
-            //    returns a view of a tensor restricted to a contiguous slice along dim (0 = rows for a 2D tensor, 1 = columns) from t_start 
-            //    for length elements
+            /** @details Append BC points after the interior points. */
             test.narrow(0, row, r).copy_(elem_bc.to(torch::kCPU));
             row += r;
         }
@@ -214,9 +204,11 @@ std::vector<tensor> Pde::losses(
     const tensor& outputs,
     const std::function<tensor(const tensor&)>& loss_fn
 ){
-    // This returns differentiable scalar tensors that can be summed and backpropagated.
-    // Layout: PDE losses first, then BC losses.
-    // Validate shapes
+    /**
+     * @details
+     * Returns differentiable scalar tensors that can be summed and backpropagated.
+     * Layout: PDE losses first, then BC losses.
+     */
     TORCH_CHECK(inputs.dim() == 2, "inputs must be 2D [N, dim]");
     TORCH_CHECK(outputs.dim() == 2, "outputs must be 2D [N, out_dim]");
     if (inputs.size(0) != outputs.size(0)) {
@@ -224,7 +216,11 @@ std::vector<tensor> Pde::losses(
         throw std::runtime_error("inputs and outputs must have the same number of rows");
     }
 
-    // Choose BC counts: use batch-specific if available and matching this inputs size
+    /**
+     * @details
+     * Choose BC counts: use batch-specific counts when `inputs` correspond to the
+     * most recently built batch, otherwise fall back to full-dataset counts.
+     */
     std::vector<int> nb;
     if (static_cast<int>(inputs.size(0)) == training_batch_size) {
         nb = num_bcs_batch;
@@ -232,9 +228,12 @@ std::vector<tensor> Pde::losses(
         nb = num_bcs;
     }
 
-    // Compute cumulative BC indices: bcs_start[i] is the starting row for BC i
-    // The batch structure is: [BC0_points | BC1_points | ... | BCn_points | PDE_points]
-    // bcs_start = [0, num_bcs[0], num_bcs[0]+num_bcs[1], ..., total_bc]
+    /**
+     * @details
+     * Compute cumulative BC indices: `bcs_start[i]` is the starting row for BC i.
+     * Batch structure is:
+     * `[BC0_points | BC1_points | ... | BCn_points | PDE_points]`.
+     */
 
     std::vector<int> bcs_start;
     bcs_start.push_back(0);
@@ -247,19 +246,21 @@ std::vector<tensor> Pde::losses(
         throw std::runtime_error("num_bcs exceeds provided inputs/outputs rows");
     }
 
-    // Collect all loss values (PDE losses first, then BC losses)
+    /** @details Collect all loss values (PDE losses first, then BC losses). */
     std::vector<tensor> losses_val;
 
-    // Scalar 0 on the right device/dtype for empty segments.
+    /** @details Scalar 0 on the right device/dtype for empty segments. */
     tensor zero = torch::zeros({}, outputs.options());
 
-    // PDE residuals on the remaining rows (after all BC points)
+    /** @details PDE residuals live on the remaining rows (after all BC points). */
     const int pde_rows = static_cast<int>(inputs.size(0)) - total_bc;
 
-    // Important: call the PDE callback on the *full* (inputs, outputs) tensors.
-    // This guarantees that autograd sees a direct dependency between the tensor
-    // we differentiate (inputs) and the tensor we differentiate from (outputs).
-    // If we pass sliced views created later, PyTorch may treat them as "unused".
+    /**
+     * @details
+     * Important: call the PDE callback on the *full* `(inputs, outputs)` tensors.
+     * This guarantees autograd sees a direct dependency between inputs and outputs.
+     * Passing sliced views can sometimes trigger "unused" gradients.
+     */
     std::vector<tensor> residuals_full = pde(inputs, outputs);
 
     for (size_t i = 0; i < residuals_full.size(); ++i) {
@@ -277,18 +278,23 @@ std::vector<tensor> Pde::losses(
     }
     
 
-    // Boundary condition errors
-    // BC points in batch are arranged as: [BC0 | BC1 | ... | BCn]
-    // where BCi occupies rows [bcs_start[i], bcs_start[i+1])
+    /**
+     * @details
+     * Boundary condition errors.
+     * BC points in batch are arranged as `[BC0 | BC1 | ... | BCn]` where BC i
+     * occupies rows `[bcs_start[i], bcs_start[i+1])`.
+     */
     for (size_t i = 0; i < bcs.size(); ++i) {
         
         if (bcs_start[i + 1] > inputs.size(0)) {
             throw std::runtime_error("BC index range exceeds inputs/outputs rows");
         }
 
-        // Compute BC error using the boundary condition object
-        // bcs[i]->error expects: (train_x_all, inputs_batch, outputs_batch, beg, end)
-        // where train_x_all is the full training set and beg, end index into the batch
+        /**
+         * @details
+         * Compute BC error using the boundary condition object.
+         * The signature is `error(train_x_all, inputs_batch, outputs_batch, beg, end)`.
+         */
         const int beg = bcs_start[i];
         const int end = bcs_start[i + 1];
         if (end <= beg) {
@@ -306,14 +312,17 @@ std::vector<tensor> Pde::losses(
 }
 
 tensor& Pde::train_next_batch(const int batch_size){
-
-    // Returns a contiguous tensor of training points.
-    // Batch layout is consistent with losses(): [BC0|BC1|...|PDE].
+    /**
+     * @details
+     * Returns a contiguous tensor of training points.
+     * Batch layout is consistent with `losses()`:
+     * `[BC0 | BC1 | ... | PDE]`.
+     */
 
     if(batch_size == 0){
-        // Full batch: cache concatenation
+        /** @details Full batch: cache concatenation. */
         if(!is_train_x_initialized){
-            // Build once into a contiguous buffer: [BC0 | BC1 | ... | PDE]
+            /** @details Build once into a contiguous buffer: `[BC0 | BC1 | ... | PDE]`. */
             int64_t total_bc = 0;
             for (size_t i = 0; i < train_x_bc.size(); ++i) {
                 if (train_x_bc[i].defined()) {
@@ -331,13 +340,11 @@ tensor& Pde::train_next_batch(const int batch_size){
                 }
                 const int64_t r = train_x_bc[i].size(0);
 
-                // tensor.narrow(int64_t dim, int64_t t_start, int64_t length)
-                //    returns a view of a tensor restricted to a contiguous slice along dim (0 = rows for a 2D tensor, 1 = columns) from t_start 
-                //    for length elements
+                /** @details Copy via `narrow()` view to avoid extra allocations. */
                 train_x.narrow(0, offset, r).copy_(train_x_bc[i]);
                 offset += r;
             }
-            // Append PDE points
+            /** @details Append PDE points. */
             if (train_x_pde.numel() > 0) {
                 const int64_t r = train_x_pde.size(0);
                 train_x.narrow(0, offset, r).copy_(train_x_pde);
@@ -349,12 +356,12 @@ tensor& Pde::train_next_batch(const int batch_size){
         }
     }
     else{
-        // Start with BC points then append PDE points
+        /** @details Start with BC points then append PDE points. */
 
         const int len_pde = static_cast<int>(train_x_pde.size(0));
         const int len_training = len_pde + num_boundary;
 
-        // Full batch if non-positive or larger than training set
+        /** @details Full batch if non-positive or larger than training set. */
         if (batch_size <= 0 || batch_size >= len_training) {
             training_batch_size = len_training;
             for(size_t i = 0; i< idx_bc_prec.size(); ++i){
@@ -367,9 +374,12 @@ tensor& Pde::train_next_batch(const int batch_size){
         
         bool reshuffle = false;
 
-        // Compute batch split between BC and PDE portions
-        // keeps the same proportion of the training set
-        // moreover ensures that there is at least one point for every boundary condition
+        /**
+         * @details
+         * Compute batch split between BC and PDE portions:
+         * keep approximately the same proportion as the training set and ensure
+         * at least one point per boundary condition.
+         */
         int batch_size_bc = std::min( std::max(
                                                 static_cast<int>(bcs.size()), 
                                                 batch_size * num_boundary / len_training ), num_boundary);
@@ -377,9 +387,9 @@ tensor& Pde::train_next_batch(const int batch_size){
         int batch_size_pde = std::max(0, std::min(batch_size - batch_size_bc,  
                                                     len_pde));
 
-        // Build the batch: [BC batch; PDE batch] into a reusable contiguous buffer
+        /** @details Build the batch: `[BC batch; PDE batch]` into a contiguous buffer. */
 
-        // assign the bc points
+        /** @details Assign the BC points. */
         const int got_bc = batch_size_bc / bcs.size();
         int residual_bc = batch_size_bc % bcs.size();
         int64_t actual_bc = 0;
@@ -392,7 +402,7 @@ tensor& Pde::train_next_batch(const int batch_size){
             }
         }
         
-        // assign domain points
+        /** @details Assign domain (PDE) points. */
         const int pde_end = std::min(idx_pde_prec + batch_size_pde, len_pde);
         const int got_pde = pde_end - idx_pde_prec;
 
@@ -403,7 +413,7 @@ tensor& Pde::train_next_batch(const int batch_size){
         train_x = train_x.resize_({total_rows, phisical_dim});
 
         int64_t offset = 0;
-        // Rewind BC cursors by the amount we just advanced so we can copy slices
+        /** @details Copy the selected BC slices into the contiguous batch buffer. */
         for (size_t i = 0; i < train_x_bc.size(); ++i) {
             const int k = num_bcs_batch[i];
             if (k <= 0) {
@@ -425,16 +435,16 @@ tensor& Pde::train_next_batch(const int batch_size){
 
         idx_pde_prec = pde_end;
 
-        // If we reached the end of either stream, reshuffle for next epoch and reset indices
+        /** @details If we reached the end, reshuffle for next epoch and reset indices. */
         if (reshuffle || idx_pde_prec >= len_pde) {
             std::mt19937 rng(epoch_seed);
 
-            // Permute BC set
+            /** @details Permute BC sets. */
             for(size_t i = 0; i < train_x_bc.size(); ++i){
                 train_x_bc[i] = permute_rows_cpu(train_x_bc[i].to(torch::kCPU).contiguous(), rng);
                 idx_bc_prec[i] = 0;
             }
-            // Permute PDE set
+            /** @details Permute PDE set. */
             train_x_pde = permute_rows_cpu(train_x_pde.to(torch::kCPU).contiguous(), rng);
             
             idx_pde_prec = 0;

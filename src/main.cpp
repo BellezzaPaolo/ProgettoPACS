@@ -19,29 +19,38 @@
 namespace py = pybind11;
 
 int main(){
-    py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+    /** @brief Start the embedded Python interpreter and keep it alive. */
+    py::scoped_interpreter guard{};
     
     py::module_ os = py::module_::import("os");
     os.attr("environ")["DDE_BACKEND"] = "pytorch";
 
-    // Optional: inspect Python path if needed
-    // py::module_ sys = py::module_::import("sys");
+    /**
+     * @note Optional debugging utility.
+     * You can inspect `sys.path` if imports fail.
+     */
+#if 0
+    py::module_ sys = py::module_::import("sys");
+#endif
 
-    // Import deepxde after backend is set
+    /** @brief Import DeepXDE after backend is set. */
     py::module_ dde = py::module_::import("deepxde");
 
-    // Set random seed for reproducibility
+    /** @brief Set random seed for reproducibility (Python side). */
     dde.attr("config").attr("set_random_seed")(123); 
 
-    // geometry
+    /** @brief Geometry definition (L-shaped polygon). */
     std::vector<std::array<double, 2>> vertices = {{0.0, 0.0}, {1.0, 0.0}, {1.0, -1.0}, {-1.0, -1.0}, {-1.0, 1.0}, {0.0, 1.0}};
 
     py::object geom = dde.attr("geometry").attr("Polygon")(vertices);
 
-    // boundary conditions
+    /** @brief Boundary conditions. */
     std::function<bool(const tensor&, bool)> on_boundary = [](const tensor&, bool on_bc){ return on_bc; };
 
-    // Dirichlet target: zero function, returns (N,1) tensor of zeros
+    /**
+     * @brief Dirichlet target: zero function.
+     * @details Returns a `(N,1)` tensor of zeros.
+     */
     std::function<tensor(const tensor&)> func = [](const tensor& x){
         return torch::zeros({x.size(0), 1}, x.options());
     };
@@ -49,7 +58,7 @@ int main(){
     std::vector<std::shared_ptr<Boundary_Condition>> bc_vector;
     bc_vector.push_back(std::make_shared<Dirichlet_BC>(geom, func, on_boundary));
 
-    // Network (needed to build an autograd graph for the PDE residual)
+    /** @brief Neural network (needed to build an autograd graph for the PDE residual). */
     auto net = std::make_shared<FNN<Activation::Tanh>>(std::vector<int64_t>{2, 50, 50, 50, 50, 1});
     net->to(torch::kFloat32);
     net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
@@ -64,11 +73,13 @@ int main(){
 
     const std::vector<int> n_fine = {10, 50, 100, 500, 1000, 2000};
     const std::vector<double> lr = {0.1, 0.01, 0.001, 0.0001};
-    const std::vector<int> budgets = {int(1e7),int(1e6),int(1e7),int(1e8)};
+    const std::vector<int> budgets = {int(1e5),int(1e6),int(1e7),int(1e8)};
     const int batch_size = 0;
 
-    // Write results in the same CSV schema used by the Python experiments.
-    // Path is anchored to the source tree even when running from build/.
+    /**
+     * @brief Write results in the same CSV schema used by the Python experiments.
+     * @details Path is anchored to the source tree even when running from `build/`.
+     */
     const auto project_root = std::filesystem::path(__FILE__).parent_path();
     std::string filename = "Poisson_Lshape_" + std::to_string(batch_size) + ".csv";
     const auto csv_path = project_root /"results" / filename;
@@ -81,7 +92,10 @@ int main(){
             net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
             model.compile("SGD", lr[i], /*loss=*/"MSE", /*verbose=*/false);
             Result res = model.train(budgets[j], batch_size, /*budget=*/budgets[j], false);
-            // model.plot_loss_history();
+            /** @note Optional plotting (requires matplotlib in the Python env). */
+#if 0
+            model.plot_loss_history();
+#endif
             model.save_data(csv_path, res);
 
             for(size_t k = 0; k < n_fine.size(); ++k){
@@ -89,7 +103,10 @@ int main(){
                 net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
                 model.compile("ParaFlowS", lr[i],/*n_fine = */ n_fine[k], /*loss=*/"MSE", /*verbose=*/false);
                 Result res = model.train(budgets[j], batch_size, /*budget=*/budgets[j], false);
-                // model.plot_loss_history();
+                /** @note Optional plotting (requires matplotlib in the Python env). */
+#if 0
+                model.plot_loss_history();
+#endif
                 model.save_data(csv_path, res);
 
             }
@@ -98,11 +115,14 @@ int main(){
         }
     }
 
-    // std::cout << "Training done. epoch = " << res.epoch
-    //           << " final_loss = " << res.final_loss
-    //           << " budget_used = " << res.budget_used
-    //           << " time_ms = " << res.total_time_ms
-    //           << std::endl;
+    /** @note Optional final summary print (left disabled). */
+#if 0
+    std::cout << "Training done. epoch = " << res.epoch
+              << " final_loss = " << res.final_loss
+              << " budget_used = " << res.budget_used
+              << " time_ms = " << res.total_time_ms
+              << std::endl;
+#endif
 
     return 0;
 }

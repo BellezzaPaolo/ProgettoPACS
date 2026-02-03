@@ -47,15 +47,15 @@ inline tensor laplacian(const tensor& u, const tensor& x, int64_t component = 0)
     if (u.dim() == 2) {
         TORCH_CHECK(u.size(0) == x.size(0), "laplacian: batch mismatch between u and x");
         TORCH_CHECK(component >= 0 && component < u.size(1), "laplacian: component out of range");
-        u_comp = u.index({Slice(), component}); // [N]
+        u_comp = u.index({Slice(), component});
     } else if (u.dim() == 1) {
         TORCH_CHECK(u.size(0) == x.size(0), "laplacian: batch mismatch between u and x");
-        u_comp = u; // [N]
+        u_comp = u;
     } else {
         TORCH_CHECK(false, "laplacian: u must be [N], [N,1], or [N,out_dim]");
     }
 
-    // First derivatives: grad_u = du/dx, shape [N, dim]
+    /** @details First derivatives: `grad_u = du/dx`, shape `[N, dim]`. */
     tensor grad_u = torch::autograd::grad(
         /*outputs=*/{u_comp.sum()},
         /*inputs=*/{x},
@@ -67,9 +67,9 @@ inline tensor laplacian(const tensor& u, const tensor& x, int64_t component = 0)
     const int64_t dim = x.size(1);
     tensor lap = torch::zeros({x.size(0)}, x.options());
 
-    // Second derivatives: sum_i d^2u/dx_i^2 (trace of Hessian)
+    /** @details Second derivatives: $\sum_i \partial^2 u/\partial x_i^2$ (trace of Hessian). */
     for (int64_t d = 0; d < dim; ++d) {
-        tensor du_d = grad_u.index({Slice(), d}); // [N]
+        tensor du_d = grad_u.index({Slice(), d});
 
         tensor grad2 = torch::autograd::grad(
             /*outputs=*/{du_d.sum()},
@@ -77,12 +77,12 @@ inline tensor laplacian(const tensor& u, const tensor& x, int64_t component = 0)
             /*grad_outputs=*/{},
             /*retain_graph=*/true,
             /*create_graph=*/true
-        )[0]; // [N, dim]
+        )[0];
 
         lap = lap + grad2.index({Slice(), d});
     }
 
-    return lap.unsqueeze(1); // [N,1]
+    return lap.unsqueeze(1);
 }
 
 } // namespace differential_operators

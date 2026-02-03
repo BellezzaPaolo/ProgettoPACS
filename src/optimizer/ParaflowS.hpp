@@ -44,11 +44,11 @@ private:
     int n_coarse;
     double lr_coarse;
 
-    // Use torch optimizers for update rules (future-proof: can be swapped to Adam, etc.).
+    /** @brief Torch optimizers implementing the update rules (coarse and fine). */
     torch::optim::SGD coarse_opt_;
     torch::optim::SGD fine_opt_;
 
-    // Per-parameter state (aligned with net->parameters())
+    /** @brief Per-parameter state buffers (aligned with `net->parameters()`). */
     std::vector<tensor> bff1;
     std::vector<tensor> correction;
     std::vector<tensor> params_old;
@@ -83,7 +83,7 @@ private:
         params_backup.reserve(params.size());
 
         for (const auto& p : params) {
-            // Detached clones to avoid graph tracking and aliasing.
+            /** @details Detached buffers avoid graph tracking and aliasing. */
             bff1.push_back(torch::zeros_like(p).detach());
             correction.push_back(torch::zeros_like(p).detach());
             params_old.push_back(torch::zeros_like(p).detach());
@@ -165,7 +165,6 @@ private:
         tensor loss;
         tensor x;
         tensor u;
-        // std::vector<tensor> losses;
 
         for (int k = 0; k < n_fine; ++k) {
             tensor& batch_x_ref = this->data->train_next_batch(batch_size);
@@ -174,8 +173,6 @@ private:
             u = this->net->forward(x);
             const std::vector<tensor> losses = this->data->losses(x, u, this->loss_fn);
             loss = torch::stack(losses).sum();
-
-            // std::cout << "loss_fine "<< loss.item<double>() << std::endl;
             
             this->net->zero_grad();
             loss.backward();
@@ -238,7 +235,7 @@ public:
         if (verbose){
             std::cout << "Starting optimization with ParaFlowS..." << std::endl;
         }
-        // Training is fully in C++/torch; release GIL to avoid blocking embedded Python.
+        /** @details Training is fully in C++/torch; release the GIL to avoid blocking embedded Python. */
         py::gil_scoped_release no_gil;
 
         initialize_state();
@@ -255,27 +252,25 @@ public:
         double loss_test;
         tensor loss_test_t;
         if (this->use_test){
-            // Keep a local leaf copy with gradients enabled (used for PDE derivatives in test loss).
+            /** @details Keep a local leaf copy with gradients enabled for PDE derivatives in test loss. */
             test = this->data->get_test().detach().clone().set_requires_grad(true);
         }
 
         auto t0 = std::chrono::high_resolution_clock::now();
 
         for (int it = 0; it < max_iterations; ++it) {
-            // 1) coarse pass (compute bff1)
+            /** @details 1) Coarse pass (compute `bff1` candidate parameters). */
             loss_coarse = coarse_solver(/*batch_size=*/0);
-            // std::cout << "loss_coarse " << loss_coarse << std::endl;
 
             if (budget > 0 && this->budget_used >= budget) {
                 res.epoch = it + 1;
                 break;
             }
 
-            // 2) fine pass (updates params)
+            /** @details 2) Fine pass (updates live parameters). */
             loss_fine = fine_solver(batch_size, budget);
-            // std::cout << "loss_fine " << loss_fine << std::endl;
 
-            // 3) correction loop
+            /** @details 3) Correction loop (enforce monotonicity w.r.t. fine loss). */
             stay = true;
             loss_coarse = loss_fine;
 
@@ -288,7 +283,7 @@ public:
             }
 
             for (int j = 0; j < n_coarse; ++j) {
-                // params = bff1 + correction
+                /** @details Apply candidate parameters: `params = bff1 + correction`. */
                 {
                     auto params = this->net->parameters();
                     torch::NoGradGuard no_grad;
@@ -304,10 +299,9 @@ public:
                 }
 
                 loss_coarse = coarse_solver(/*batch_size=*/0);
-                // std::cout << "loss coarse = " << loss_coarse << std::endl;
 
                 if (loss_coarse <= loss_fine || j == 0) {
-                    // save iteration
+                    /** @details Accept: save current parameters as best-so-far. */
                     {
                         const auto params = this->net->parameters();
                         torch::NoGradGuard no_grad;
@@ -317,7 +311,7 @@ public:
                     }
                     loss_fine = loss_coarse;
                 } else {
-                    // revert to best accepted coarse state
+                    /** @details Reject: revert to best accepted parameters. */
                     {
                         auto params = this->net->parameters();
                         torch::NoGradGuard no_grad;
@@ -362,7 +356,7 @@ public:
 
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        // Final loss on full training set
+        /** @details Final loss on full training set. */
         tensor& full_x_ref = this->data->train_next_batch(0);
         tensor x_full = full_x_ref.detach().clone().set_requires_grad(true);
         this->net->zero_grad();

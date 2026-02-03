@@ -45,7 +45,7 @@ struct Result {
     /// Batch size used during training (0 means full batch in this project).
     int batch_size = 0;
     /// ParaFlowS-only: number of fine steps per outer iteration; 0 if not used.
-    int n_fine = 0; // if the optimizer doesn't use it, this 0 will be the sign
+    int n_fine = 0; /**< If the optimizer doesn't use it, it remains 0. */
     /// Learning rate used by the optimizer.
     double lr = 0;
 };
@@ -57,7 +57,10 @@ protected:
     std::shared_ptr<NetT> net;
     std::function<tensor(const tensor&)> loss_fn;
 
-    // Keep empty; derived optimizers can push_back each time they log.
+    /**
+     * @brief Loss histories for plotting/diagnostics.
+     * @details Derived optimizers can `push_back` into these vectors when they log.
+     */
     std::vector<double> loss_history_train;
     std::vector<double> loss_history_test;
 

@@ -76,7 +76,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
     if(verbose){
         std::cout << "Starting optimization with Gradient Descent..." << std::endl;
     }
-    // Training is fully in C++/torch; release GIL to avoid blocking embedded Python.
+    /** @details Training is fully in C++/torch; release the GIL to avoid blocking embedded Python. */
     py::gil_scoped_release no_gil;
 
     this->budget_used = 0;
@@ -90,7 +90,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
     tensor u_test;
     tensor loss_test;
     if (this->use_test) {
-        // Keep a leaf tensor with gradients enabled: test loss may need PDE derivatives w.r.t. x.
+        /** @details Keep a leaf tensor with gradients enabled for PDE derivatives w.r.t. x. */
         test = this->data->get_test().detach().clone().set_requires_grad(true);
     }
 
@@ -99,7 +99,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
     for (int it = 0; it < max_iterations; ++it) {
         tensor& batch_x = this->data->train_next_batch(batch_size);
 
-        // Create a leaf input tensor with gradients enabled for PINN differential operators.
+        /** @details Create a leaf input tensor with gradients enabled for PINN differential operators. */
         x = batch_x.clone().detach().set_requires_grad(true);
 
         u = this->net->forward(x);
@@ -141,7 +141,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    // Final loss on full training set
+    /** @details Final loss on full training set. */
     tensor& batch_x = this->data->train_next_batch(0);
     x = batch_x.detach().clone().set_requires_grad(true);
     u = this->net->forward(x);

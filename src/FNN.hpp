@@ -63,20 +63,19 @@ private:
 			return torch::tanh(x);
 		else if constexpr (A == Activation::Sigmoid)
 			return torch::sigmoid(x);
-		else
-			return x; // Linear
+		else {
+			/** @details Linear activation: identity. */
+			return x;
+		}
 	}
 
-	// torch::Tensor apply_activation(const torch::Tensor& x) const
-	// {
-	// 	switch (activation_){
-	// 		case Activation::Relu:    return torch::relu(x);
-	// 		case Activation::Tanh:    return torch::tanh(x);
-	// 		case Activation::Sigmoid: return torch::sigmoid(x);
-	// 		case Activation::Linear:
-	// 		default:                 return x;
-	// 	}
-	// }
+	/**
+	 * @brief Legacy runtime-activation implementation (disabled).
+	 * @details
+	 * The current design uses a compile-time activation via the `Activation` template
+	 * parameter for simplicity and performance.
+	 */
+	// torch::Tensor apply_activation_runtime(const torch::Tensor& x) const;
 
 public:
 	/**
@@ -124,15 +123,13 @@ public:
 	 * @return Output tensor of shape `[N, out_dim]`.
 	 */
 	torch::Tensor forward(torch::Tensor x){
-		// Accept x as [N, in_dim] or [in_dim]. Convert 1D -> [1, in_dim].
+		/** @details Accept `x` as `[N, in_dim]` or `[in_dim]`. Convert 1D -> `[1, in_dim]`. */
 		if(x.dim() == 1)
 			x = x.unsqueeze(0);
 
 		TORCH_CHECK(!layer_sizes_.empty(), "FNN is not initialized with layer sizes");
 		TORCH_CHECK(x.size(-1) == layer_sizes_.front(), "Expected input dim ", layer_sizes_.front(), ", got ", x.size(-1));
 
-		// const int64_t n_layers = static_cast<int64_t>(layers->size());
-		
 		for(size_t i = 0; i < depth; ++i){
 			x = layers[i]->as<torch::nn::Linear>()->forward(x);
 			if(i != depth - 1)
@@ -209,25 +206,30 @@ void FNN<A>::initialize_weight(){
 			const auto N_in  = lin->weight.size(1);
 
 			if constexpr (Iw == Initializer_weight::One){
+				/** @details Constant initialization with one value. */
 				torch::nn::init::ones_(lin->weight);
 			}
 			else if constexpr (Iw == Initializer_weight::Uniform){
-				// Uniform in [-1, 1]
+				/** @details Uniform initialization in [-1, 1]. */
 				torch::nn::init::uniform_(lin->weight, -1.0, 1.0);
 			}
 			else if constexpr (Iw == Initializer_weight::Glorot_Uniform){
+				/** @details Glorot Uniform initialization ( U [- 6 /sqrt(N_{in} + N_{out}),6 /sqrt(N_{in} + N_{out})] ). */
 				double limit = std::sqrt(6.0 / static_cast<double>(N_in + N_out));
 				torch::nn::init::uniform_(lin->weight, -limit, limit);
 			}
 			else if constexpr (Iw == Initializer_weight::He_Uniform){
+				/** @details He Uniform initialization ( U [- 6 /sqrt(N_{in}),6 /sqrt(N_{in})] ). */
 				double limit = std::sqrt(6.0 / static_cast<double>(N_in));
 				torch::nn::init::uniform_(lin->weight, -limit, limit);
 			}
 			else if constexpr (Iw == Initializer_weight::Glorot_Norm){
+				/** @details Glorot Normal initialization ( N (0, 2 /sqrt(N_{in} + N_{out})) ). */
 				double stddev = std::sqrt(2.0 / static_cast<double>(N_in + N_out));
 				torch::nn::init::normal_(lin->weight, 0.0, stddev);
 			}
 			else if constexpr (Iw == Initializer_weight::He_Norm){
+				/** @details He Normal initialization ( N (0, 2 /sqrt(N_{in})) ). */
 				double stddev = std::sqrt(2.0 / static_cast<double>(N_in));
 				torch::nn::init::normal_(lin->weight, 0.0, stddev);
 			}
@@ -241,14 +243,15 @@ void FNN<A>::initialize_bias(const double constant_value){
 	for(auto& m : modules(/*include_self=*/false)){
 		if(auto* lin = dynamic_cast<torch::nn::LinearImpl*>(m.get())){
 			if constexpr (Ib == Initializer_bias::Constant){
+				/** @details Constant initialization with the input value. */
 				torch::nn::init::constant_(lin->bias, constant_value);
 			}
 			else if constexpr (Ib == Initializer_bias::Uniform){
-				// Uniform in [-1, 1]
+				/** @details Uniform initialization in [-1, 1]. */
 				torch::nn::init::uniform_(lin->bias, -1.0, 1.0);
 			}
 			else if constexpr (Ib == Initializer_bias::Normal){
-				// Normal with small std-dev
+				/** @details Normal initialization with small standard deviation. */
 				torch::nn::init::normal_(lin->bias, 0.0, 0.05);
 			}
 		}

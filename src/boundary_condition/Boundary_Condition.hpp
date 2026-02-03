@@ -27,14 +27,20 @@ using tensor = torch::Tensor;
  */
 class __attribute__((visibility("hidden"))) Boundary_Condition {    
 protected:
-    // Function to check if points are on the boundary
-    // x is a 1D tensor view of a point with shape [dim]
+   /**
+    * @brief Callback deciding whether a point lies on the boundary.
+    *
+    * @details
+    * The callback signature is `on_boundary(x, on_bc_mask)` where:
+    * - `x` is a 1D tensor view of one point, shape `[dim]`
+    * - `on_bc_mask` is the boolean mask element returned by Python `geom.on_boundary(X)`.
+    */
     std::function<bool(const tensor&, bool)> on_boundary;
     
-    // Output component that this Boundary_Condition is applied to
+   /** @brief Output component index this BC acts on. */
     int component;
     
-    // Reference to deepXDE geometry class
+   /** @brief Handle to the DeepXDE geometry object (Python). */
     py::handle geom;
 
 public:
@@ -54,25 +60,25 @@ public:
     
     /**
      * @brief Filter points that are on the boundary.
-        *
-        * @details
-        * This method calls the Python geometry predicate `geom.on_boundary(X)` to get
-        * a boolean mask and then applies the user-provided `on_boundary(x_i, mask_i)`
-        * callback to decide which points to keep.
-        *
-        * @param X Input points matrix `[N, dim]`.
-        * @return Filtered points of shape `[M, dim]` with `M <= N`.
+     *
+     * @details
+     * This method calls the Python geometry predicate `geom.on_boundary(X)` to get
+     * a boolean mask and then applies the user-provided `on_boundary(x_i, mask_i)`
+     * callback to decide which points to keep.
+     *
+     * @param X Input points matrix `[N, dim]`.
+     * @return Filtered points of shape `[M, dim]` with `M <= N`.
      */
     virtual tensor filter(const tensor& X) const;
     
     /**
      * @brief Get collocation points (points where Boundary_Condition is enforced).
-        *
-        * @details
-        * Default implementation delegates to `filter(X)`.
-        *
-        * @param X Input points matrix `[N, dim]`.
-        * @return Collocation points on the boundary `[M, dim]`.
+     *
+     * @details
+     * Default implementation delegates to `filter(X)`.
+     *
+     * @param X Input points matrix `[N, dim]`.
+     * @return Collocation points on the boundary `[M, dim]`.
      */
     virtual tensor collocation_points(const tensor& X) const;
     
@@ -80,12 +86,12 @@ public:
      * @brief Compute the loss/error for this boundary condition.
      * Pure virtual method - must be implemented by derived classes.
      * 
-        * @param X Full set of training points (DeepXDE-style: `train_x_all`).
-        * @param inputs Batch input points `[N_batch, dim]`.
-        * @param outputs Network outputs evaluated at `inputs`, shape `[N_batch, out_dim]`.
-        * @param beg Beginning row (inclusive) of this BC segment inside the batch.
-        * @param end Ending row (exclusive) of this BC segment inside the batch.
-        * @return Error tensor of shape `[end-beg, 1]`.
+     * @param X Full set of training points (DeepXDE-style: `train_x_all`).
+     * @param inputs Batch input points `[N_batch, dim]`.
+     * @param outputs Network outputs evaluated at `inputs`, shape `[N_batch, out_dim]`.
+     * @param beg Beginning row (inclusive) of this BC segment inside the batch.
+     * @param end Ending row (exclusive) of this BC segment inside the batch.
+     * @return Error tensor of shape `[end-beg, 1]`.
      */
     virtual tensor error(const tensor& X, 
                           const tensor& inputs, 

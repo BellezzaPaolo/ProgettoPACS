@@ -25,13 +25,13 @@ bc = dde.icbc.DirichletBC(geom, lambda x: 0, boundary)
 data = dde.data.PDE(geom, pde, bc, num_domain=1200, num_boundary=120, num_test=1500)
 
 # learning_rate = 0.1
-# budget = 200
+# budget = int(1e6)
 
 # net = dde.nn.FNN([2] + [50] * 4 + [1], "tanh", "Glorot uniform")
 # model = dde.Model(data, net)
 # model.compile("sgd", lr=learning_rate)#, n_fine = 100)
-# losshistory, train_state,data  = model.train(iterations=budget, batch_size=300, display_every=10)
-#dde.saveplot(losshistory, train_state, issave=True, isplot=True)
+# losshistory, train_state,data  = model.train(iterations=budget, display_every=10,callbacks = [dde.callbacks.BudgetCallback(budget)])
+# # dde.saveplot(losshistory, train_state, issave=True, isplot=True)
 
 
 # Test the code on different learning rate and budgets
