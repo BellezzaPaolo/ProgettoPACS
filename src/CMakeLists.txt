@@ -21,40 +21,52 @@ find_package(Torch REQUIRED)
 # --- Include directories ---
 include_directories(${.})
 
-# Eigen (system)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-
-# --- Source files ---
-set(SOURCES
-    main.cpp
+# --- Common source files (shared by all executables) ---
+set(COMMON_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/boundary_condition/Boundary_Condition.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/boundary_condition/Dirichlet_BC.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Pde.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/pde/Pde.cpp
 )
 
-# --- Create executable ---
-add_executable(example ${SOURCES})
+function(add_pacs_executable target_name entry_source)
+    add_executable(${target_name}
+        ${entry_source}
+        ${COMMON_SOURCES}
+    )
+
+    target_include_directories(${target_name} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${TORCH_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(${target_name} PRIVATE
+        pybind11::embed
+        ${TORCH_LIBRARIES}
+    )
+endfunction()
+
+# --- Executables ---
+add_pacs_executable(test ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp)
+add_pacs_executable(poisson_lshape ${CMAKE_CURRENT_SOURCE_DIR}/PoissonLshape.cpp)
 
 # Torch provides recommended compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-
-# --- Link pybind11 ---
-target_link_libraries(example PRIVATE pybind11::embed Eigen3::Eigen ${TORCH_LIBRARIES})
-
-# --- Torch-only example (no Python embedding) ---
-target_include_directories(example PRIVATE ${TORCH_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 # --- Set environment variables for running the executable ---
 set(PYTHON_ENV_HOME "/home/paolo/miniforge3/envs/pacs")
 set(PYTHON_LIB_PATH "${PYTHON_ENV_HOME}/lib")
 
-# Add a custom target to run example with proper environment
-add_custom_target(run
-    COMMAND ${CMAKE_COMMAND} -E env 
-        PYTHONHOME=${PYTHON_ENV_HOME}
-        LD_LIBRARY_PATH=${PYTHON_LIB_PATH}:$ENV{LD_LIBRARY_PATH}
-        $<TARGET_FILE:example>
-    DEPENDS example
-    COMMENT "Running example with Python environment..."
-)
+function(add_pacs_run_target run_target_name exe_target_name)
+    add_custom_target(${run_target_name}
+        COMMAND ${CMAKE_COMMAND} -E env
+            PYTHONHOME=${PYTHON_ENV_HOME}
+            LD_LIBRARY_PATH=${PYTHON_LIB_PATH}:$ENV{LD_LIBRARY_PATH}
+            $<TARGET_FILE:${exe_target_name}>
+        DEPENDS ${exe_target_name}
+        COMMENT "Running ${exe_target_name} with Python environment..."
+    )
+endfunction()
+
+# Run targets
+add_pacs_run_target(run_test test)
+add_pacs_run_target(run_poissonlshape poisson_lshape)
