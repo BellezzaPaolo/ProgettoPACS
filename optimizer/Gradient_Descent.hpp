@@ -1,6 +1,19 @@
 #ifndef GRADIENT_DESCENT_HPP
 #define GRADIENT_DESCENT_HPP
 
+/**
+ * @file Gradient_Descent.hpp
+ * @brief SGD-based optimizer/trainer for the PINN model.
+ *
+ * @details
+ * This optimizer performs standard stochastic gradient descent using
+ * `torch::optim::SGD` over the network parameters.
+ *
+ * Important for PINNs: the input batch `x` is cloned/detached and then
+ * `requires_grad(true)` is enabled so that autograd can compute PDE
+ * derivatives (e.g. Laplacian) with respect to the inputs.
+ */
+
 #include <pybind11/embed.h>
 #include <chrono>
 #include <iostream>
@@ -17,6 +30,13 @@ private:
     double lr;
     torch::optim::SGD operator_;
 public:
+    /**
+     * @brief Construct a Gradient Descent optimizer.
+     * @param data Dataset/geometry wrapper.
+     * @param net Network to optimize.
+     * @param lr Learning rate.
+     * @param loss_fn Scalar loss reducer (e.g. MSE).
+     */
     Gradient_Descent(std::shared_ptr<Pde> data,
                      std::shared_ptr<NetT> net,
                      double lr,
@@ -26,11 +46,33 @@ public:
 
     virtual ~Gradient_Descent() = default;
 
+    /**
+     * @brief Train using SGD.
+     *
+     * @param batch_size Batch size; 0 means full batch.
+     * @param budget Maximum number of samples to consume (0 disables budget stop).
+     * @param max_iterations Maximum optimizer iterations.
+     * @param verbose Enable periodic logging and loss history tracking.
+     * @return Result Training summary.
+     */
     Result train(int batch_size, int budget, int max_iterations, bool verbose) override;
 };
 
 template <class NetT>
 Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterations, bool verbose){
+    /**
+     * @details
+     * Training loop outline:
+     * 1) Fetch a batch from `Pde::train_next_batch()`.
+     * 2) Build a leaf tensor `x` with `requires_grad(true)` to enable
+     *    autograd-based PDE operators inside `Pde::losses()`.
+     * 3) Forward pass, compute physics/data losses, backward, SGD step.
+     * 4) Track consumed samples via `budget_used` and stop if `budget` is reached.
+     *
+     * Notes:
+     * - `batch_size == 0` means full batch.
+     * - `budget == 0` disables the budget stop condition.
+     */
     if(verbose){
         std::cout << "Starting optimization with Gradient Descent..." << std::endl;
     }
@@ -39,8 +81,6 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
 
     this->budget_used = 0;
     Result res;
-
-    int disp_every = budget / 100;
     
     tensor x;
     tensor u;
@@ -50,6 +90,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
     tensor u_test;
     tensor loss_test;
     if (this->use_test) {
+        // Keep a leaf tensor with gradients enabled: test loss may need PDE derivatives w.r.t. x.
         test = this->data->get_test().detach().clone().set_requires_grad(true);
     }
 
@@ -58,7 +99,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
     for (int it = 0; it < max_iterations; ++it) {
         tensor& batch_x = this->data->train_next_batch(batch_size);
 
-        // necessary line to compute the differential operator w.r.t. the input of the PINN
+        // Create a leaf input tensor with gradients enabled for PINN differential operators.
         x = batch_x.clone().detach().set_requires_grad(true);
 
         u = this->net->forward(x);
@@ -72,7 +113,7 @@ Result Gradient_Descent<NetT>::train(int batch_size, int budget, int max_iterati
 
         this->budget_used += batch_x.size(0);
 
-        if (verbose && (it % disp_every == 0)) {
+        if (verbose && (it % 10 == 0)) {
             this->loss_history_train.push_back(loss.item<double>());
 
             if (this->use_test) {

@@ -1,6 +1,21 @@
 #ifndef PARAFLOWS_HPP
 #define PARAFLOWS_HPP
 
+/**
+ * @file ParaflowS.hpp
+ * @brief ParaFlowS optimizer/trainer (coarse/fine + correction) for PINNs.
+ *
+ * @details
+ * ParaFlowS alternates between:
+ * - a *coarse* solver that builds a candidate parameter state (stored in `bff1`)
+ * - a *fine* solver that performs `n_fine` standard SGD steps on the live network
+ * - a correction loop that combines coarse candidate + correction and enforces
+ *   monotonicity with respect to the fine loss.
+ *
+ * For PINNs, input batches are created as leaf tensors with
+ * `requires_grad=true` to enable autograd-based differential operators.
+ */
+
 #include <chrono>
 #include <iostream>
 #include <vector>
@@ -12,8 +27,7 @@
  * @brief ParaFlowS optimizer/trainer for the torch PINN pipeline.
  *
  * @details
- * This implements the ParaFlowS scheme as in the reference Python version in
- * `python_implementation/paraflow.py`:
+ * This implements the ParaFlowS scheme:
  * - A *coarse* operator computes a large-step candidate (stored internally).
  * - A *fine* operator performs `n_fine` small GD steps (updates parameters).
  * - A correction loop runs up to `n_coarse` coarse steps while enforcing
@@ -40,32 +54,18 @@ private:
     std::vector<tensor> params_old;
     std::vector<tensor> params_backup;
 
-    // tensor compute_train_loss_and_backward(int batch_size) {
-    //     tensor& batch_x_ref = this->data->train_next_batch(batch_size);
-    //     tensor x = batch_x_ref.detach().clone().set_requires_grad(true);
-
-    //     this->net->zero_grad();
-    //     tensor u = this->net->forward(x);
-    //     const std::vector<tensor> losses = this->data->losses(x, u, this->loss_fn);
-    //     tensor loss = torch::stack(losses).sum();
-    //     loss.backward();
-
-    //     this->budget_used += static_cast<int>(batch_x_ref.size(0));
-    //     return loss;
-    // }
-
-    // tensor compute_test_loss() {
-    //     const tensor& test = this->data->get_test();
-    //     if (!test.defined() || test.numel() == 0) {
-    //         return {};
-    //     }
-
-    //     tensor x = test.detach().clone().set_requires_grad(true);
-    //     this->net->zero_grad();
-    //     tensor u = this->net->forward(x);
-    //     return torch::stack(this->data->losses(x, u, this->loss_fn)).sum();
-    // }
-
+    /**
+     * @brief Allocate (or reallocate) internal per-parameter buffers.
+     *
+     * @details
+     * ParaFlowS keeps several parameter-shaped vectors:
+     * - `bff1`: coarse candidate parameters
+     * - `correction`: fine - coarse correction term
+     * - `params_old`: last accepted parameters in the monotonicity loop
+     * - `params_backup`: temporary storage to restore parameters after a coarse step
+     *
+     * Buffers are resized only when the number of network parameters changes.
+     */
     void initialize_state() {
         const auto params = this->net->parameters();
         if (!bff1.empty() && bff1.size() == params.size()) {
@@ -91,22 +91,25 @@ private:
         }
     }
 
-    // void set_params_from_state_sum(const std::vector<tensor>& a, const std::vector<tensor>& b) {
-    //     auto params = this->net->parameters();
-    //     torch::NoGradGuard no_grad;
-    //     for (size_t i = 0; i < params.size(); ++i) {
-    //         params[i].copy_(a[i] + b[i]);
-    //     }
-    // }
-
-    void copy_params_to_state(std::vector<tensor>& dst) {
-        const auto params = this->net->parameters();
-        torch::NoGradGuard no_grad;
-        for (size_t i = 0; i < params.size(); ++i) {
-            dst[i].copy_(params[i].detach());
-        }
-    }
-
+    /**
+     * @brief Run one coarse step and store the candidate parameters in `bff1`.
+     *
+     * @param batch_size Batch size to use for the coarse loss/gradient evaluation.
+     *                  Use 0 for full-batch.
+     * @return Coarse loss value (scalar) before the coarse update.
+     *
+     * @details
+     * This function:
+     * 1) Builds a leaf input tensor `x` with `requires_grad(true)` for PINN operators.
+     * 2) Computes loss and gradients.
+     * 3) Backs up current parameters.
+     * 4) Applies `coarse_opt_` step to the live network.
+     * 5) Copies the stepped parameters into `bff1` (coarse candidate), then restores
+     *    the original parameters from `params_backup`.
+     *
+     * The backup/restore ensures coarse steps do not permanently perturb the live
+     * parameters before fine/correction logic decides what to accept.
+     */
     double coarse_solver(int batch_size) {
         tensor& batch_x_ref = this->data->train_next_batch(batch_size);
         tensor x = batch_x_ref.detach().clone().set_requires_grad(true);
@@ -119,11 +122,6 @@ private:
 
         this->budget_used += static_cast<int>(batch_x_ref.size(0));
 
-        // Build the coarse candidate without permanently updating the live parameters:
-        // 1) backup current params
-        // 2) take one coarse optimizer step
-        // 3) store the stepped params into bff1
-        // 4) restore original params (so fine solver starts from pre-coarse state)
         {
             auto params = this->net->parameters();
             torch::NoGradGuard no_grad;
@@ -146,6 +144,23 @@ private:
         return loss.item<double>();
     }
 
+    /**
+     * @brief Run the fine solver for up to `n_fine` SGD steps (in-place parameter updates).
+     *
+     * @param batch_size Batch size; 0 means full-batch.
+     * @param budget Global sample budget (0 disables budget stop).
+     * @return Loss value from the last executed fine step.
+     *
+     * @details
+     * Fine steps are standard SGD updates (`fine_opt_`) applied to the live network.
+     * Each step:
+     * - fetches a batch,
+     * - creates a leaf `x` with gradients enabled,
+     * - computes loss/gradients,
+     * - applies the optimizer step.
+     *
+     * The loop early-exits if the global budget is reached.
+     */
     double fine_solver(int batch_size, int budget) {
         tensor loss;
         tensor x;
@@ -178,6 +193,16 @@ private:
     }
 
 public:
+    /**
+     * @brief Construct a ParaFlowS optimizer.
+     *
+     * @param data Dataset/geometry wrapper.
+     * @param net Network to optimize.
+     * @param lr_fine Fine learning rate.
+     * @param n_fine Number of fine SGD steps per outer iteration.
+     * @param loss_fn Scalar loss reducer (e.g. MSE).
+     * @param n_coarse Maximum correction steps per outer iteration.
+     */
     ParaflowS(std::shared_ptr<Pde> data,
               std::shared_ptr<NetT> net,
               double lr_fine,
@@ -200,6 +225,15 @@ public:
         initialize_state();
     }
 
+    /**
+     * @brief Train using the ParaFlowS scheme.
+     *
+     * @param batch_size Batch size; 0 means full batch.
+     * @param budget Maximum number of samples to consume (0 disables budget stop).
+     * @param max_iterations Maximum outer iterations.
+     * @param verbose Enable progress logging and loss history tracking.
+     * @return Result Training summary.
+     */
     Result train(int batch_size, int budget, int max_iterations, bool verbose) override {
         if (verbose){
             std::cout << "Starting optimization with ParaFlowS..." << std::endl;
@@ -296,7 +330,7 @@ public:
                 }
             }
 
-            if (verbose && (it % 1 == 0)) {
+            if (verbose) {
                 this->loss_history_train.push_back(loss_fine);
 
                 if(this->use_test){

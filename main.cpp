@@ -64,7 +64,7 @@ int main(){
 
     const std::vector<int> n_fine = {10, 50, 100, 500, 1000, 2000};
     const std::vector<double> lr = {0.1, 0.01, 0.001, 0.0001};
-    const std::vector<int> budgets = {int(1e5),int(1e6),int(1e7),int(1e8)};
+    const std::vector<int> budgets = {int(1e7),int(1e6),int(1e7),int(1e8)};
     const int batch_size = 0;
 
     // Write results in the same CSV schema used by the Python experiments.
@@ -81,6 +81,7 @@ int main(){
             net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
             model.compile("SGD", lr[i], /*loss=*/"MSE", /*verbose=*/false);
             Result res = model.train(budgets[j], batch_size, /*budget=*/budgets[j], false);
+            // model.plot_loss_history();
             model.save_data(csv_path, res);
 
             for(size_t k = 0; k < n_fine.size(); ++k){
@@ -88,6 +89,7 @@ int main(){
                 net->initialize<Initializer_weight::Glorot_Uniform, Initializer_bias::Constant>(0.0);
                 model.compile("ParaFlowS", lr[i],/*n_fine = */ n_fine[k], /*loss=*/"MSE", /*verbose=*/false);
                 Result res = model.train(budgets[j], batch_size, /*budget=*/budgets[j], false);
+                // model.plot_loss_history();
                 model.save_data(csv_path, res);
 
             }
