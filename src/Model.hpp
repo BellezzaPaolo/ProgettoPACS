@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <torch/torch.h>
 
-#include "Pde.hpp"
+#include "pde/Pde.hpp"
 #include "Losses.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/Gradient_Descent.hpp"

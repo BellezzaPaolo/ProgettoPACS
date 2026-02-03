@@ -18,7 +18,7 @@
 #include <pybind11/embed.h>
 #include <torch/torch.h>
 
-#include "../Pde.hpp"
+#include "../pde/Pde.hpp"
 
 namespace py = pybind11;
 
@@ -119,7 +119,6 @@ public:
         py::list py_train(loss_history_train.size());
         for (size_t i = 0; i < loss_history_train.size(); ++i) {
             py_train[i] = loss_history_train[i];
-            py::print(py_train[i]);
         }
         plt.attr("loglog")(py_train, py::arg("label") = "train");
 
