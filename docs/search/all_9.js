@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['implementation_20pybind11_20deepxde_0',['C++ / LibTorch implementation (pybind11 + DeepXDE)',['../index.html',1,'']]],
-  ['initialize_1',['initialize',['../classFNN.html#aac1918e524f6b9f46dde27fcc635caa9',1,'FNN']]],
-  ['initialize_5fbias_2',['initialize_bias',['../classFNN.html#aff4c06e677c981c1c3362909300b0baf',1,'FNN']]],
-  ['initialize_5fweight_3',['initialize_weight',['../classFNN.html#a692d1a25b0c4b853a22781c5d253bbf2',1,'FNN']]],
-  ['initializer_5fbias_4',['Initializer_bias',['../FNN_8hpp.html#a1bb6c6c4c2111fc58731c00e4b2d30ab',1,'FNN.hpp']]],
-  ['initializer_5fweight_5',['Initializer_weight',['../FNN_8hpp.html#a316de75f211bc105b8fbe040e6d6922e',1,'FNN.hpp']]]
+  ['laplacian_0',['laplacian',['../namespacedifferential__operators.html#ae357989a90bd35a6f17e222210b772df',1,'differential_operators']]],
+  ['libtorch_20implementation_20pybind11_20deepxde_1',['C++ / LibTorch implementation (pybind11 + DeepXDE)',['../index.html',1,'']]],
+  ['loss_5fhistory_5ftrain_2',['loss_history_train',['../classOptimizer.html#a65e102d41563bf228c653dec470d0611',1,'Optimizer']]],
+  ['losses_3',['losses',['../classPde.html#a02da59985b07868cbe9d6a061b238b85',1,'Pde']]],
+  ['losses_2ehpp_4',['Losses.hpp',['../Losses_8hpp.html',1,'']]],
+  ['lr_5',['lr',['../structResult.html#aaa8aaf4eafae6f1a78728da2d980d41f',1,'Result']]]
 ];

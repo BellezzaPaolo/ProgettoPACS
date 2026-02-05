@@ -1,14 +1,7 @@
 var searchData=
 [
-  ['deepxde_0',['C++ / LibTorch implementation (pybind11 + DeepXDE)',['../index.html',1,'']]],
-  ['dependencies_1',['C++ / build dependencies',['../index.html#autotoc_md3',1,'']]],
-  ['dependencies_20embedded_2',['Python runtime dependencies (embedded)',['../index.html#autotoc_md4',1,'']]],
-  ['differential_5foperators_3',['differential_operators',['../namespacedifferential__operators.html',1,'']]],
-  ['differential_5foperators_2ehpp_4',['Differential_Operators.hpp',['../Differential__Operators_8hpp.html',1,'']]],
-  ['dirichlet_5fbc_5',['Dirichlet_BC',['../classDirichlet__BC.html',1,'']]],
-  ['dirichlet_5fbc_2ecpp_6',['Dirichlet_BC.cpp',['../Dirichlet__BC_8cpp.html',1,'']]],
-  ['dirichlet_5fbc_2ehpp_7',['Dirichlet_BC.hpp',['../Dirichlet__BC_8hpp.html',1,'']]],
-  ['do_8',['What the executables do',['../index.html#autotoc_md8',1,'']]],
-  ['documentation_20doxygen_9',['Documentation (Doxygen)',['../index.html#autotoc_md10',1,'']]],
-  ['doxygen_10',['Documentation (Doxygen)',['../index.html#autotoc_md10',1,'']]]
+  ['embedded_0',['Python runtime dependencies (embedded)',['../index.html#autotoc_md4',1,'']]],
+  ['epoch_1',['epoch',['../structResult.html#a9054a2f403989a909ebeea16cfe61acc',1,'Result']]],
+  ['error_2',['error',['../classBoundary__Condition.html#a91e5eac84af468c3dbd75769d00c7624',1,'Boundary_Condition::error()'],['../classDirichlet__BC.html#a36228c17601939a1eea8405a0e12a50f',1,'Dirichlet_BC::error()']]],
+  ['executables_20do_3',['What the executables do',['../index.html#autotoc_md8',1,'']]]
 ];

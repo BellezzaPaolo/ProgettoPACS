@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['optimizer_0',['Optimizer',['../classOptimizer.html#a5b5c97ccf1282712b3bb08c1bd969a6d',1,'Optimizer']]]
+  ['laplacian_0',['laplacian',['../namespacedifferential__operators.html#ae357989a90bd35a6f17e222210b772df',1,'differential_operators']]],
+  ['losses_1',['losses',['../classPde.html#a02da59985b07868cbe9d6a061b238b85',1,'Pde']]]
 ];

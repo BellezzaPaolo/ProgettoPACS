@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['train_0',['train',['../classGradient__Descent.html#a91b2774d64fc86bec0b0f923fb0716c9',1,'Gradient_Descent::train()'],['../classOptimizer.html#acce62d2367dcc78ecbd510013bcd87c9',1,'Optimizer::train()'],['../classParaflowS.html#abfe2488a172ad47771c6d8eb2e1f58be',1,'ParaflowS::train()'],['../classModel.html#a1e7d7fee0dff330738104b5ed4ff5115',1,'Model::train()']]],
-  ['train_5fnext_5fbatch_1',['train_next_batch',['../classPde.html#a13fe3a4b5147b584730716d6fd6a0a18',1,'Pde']]]
+  ['paraflows_0',['ParaflowS',['../classParaflowS.html#a67d2c262718686e3fac58cc202155580',1,'ParaflowS']]],
+  ['pde_1',['Pde',['../classPde.html#a766f66b523456b61a060156194b51557',1,'Pde']]],
+  ['plot_5fcost_5fhistory_2',['plot_cost_history',['../classOptimizer.html#a85f3d74ddbccf8bc3d8a78aa4f0d8f5c',1,'Optimizer']]],
+  ['plot_5floss_5fhistory_3',['plot_loss_history',['../classModel.html#ac102412ae7a3948f93e9d8525d6e1eb8',1,'Model']]],
+  ['print_4',['print',['../classFNN.html#ac79da78d18dd6c84852c1dc03ed9466a',1,'FNN']]]
 ];

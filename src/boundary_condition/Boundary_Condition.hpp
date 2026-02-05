@@ -19,13 +19,22 @@ namespace py = pybind11;
 
 using tensor = torch::Tensor;
 
+/// \cond DOXYGEN_SHOULD_SKIP_THIS
+// These pragmas silence GCC's -Wattributes visibility warnings. See the note at
+// the end of this file for details.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+/// \endcond
+
 /**
  * @class Boundary_Condition
  * @brief Abstract base class for boundary conditions.
  * 
  * This is the parent class for all boundary conditions (Dirichlet, Neumann, Robin, Periodic, etc.).
  */
-class __attribute__((visibility("hidden"))) Boundary_Condition {    
+class Boundary_Condition {    
 protected:
    /**
     * @brief Callback deciding whether a point lies on the boundary.
@@ -98,5 +107,21 @@ public:
                           const tensor& outputs, 
                           int beg, int end) const = 0;
 };
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+/**
+ * @note Visibility warning (-Wattributes)
+ * Some toolchains compile third-party headers (e.g. pybind11) with hidden symbol
+ * visibility. Since `Boundary_Condition` stores pybind11 types (e.g. `py::handle`) and possibly
+ * other types with different visibility, GCC may warn that `Boundary_Condition` has “greater
+ * visibility” than the type of one of its fields.
+ *
+ * This matters mainly when exporting `Boundary_Condition` as part of a shared-library ABI.
+ * In this project the executable is the main artifact, so we silence this
+ * warning locally to keep build output clean.
+ */
 
 #endif

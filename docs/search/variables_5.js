@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['total_5ftime_5fms_0',['total_time_ms',['../structResult.html#acf64dbe4ebb11027b7363e2dc54b72ee',1,'Result']]]
+  ['loss_5fhistory_5ftrain_0',['loss_history_train',['../classOptimizer.html#a65e102d41563bf228c653dec470d0611',1,'Optimizer']]],
+  ['lr_1',['lr',['../structResult.html#aaa8aaf4eafae6f1a78728da2d980d41f',1,'Result']]]
 ];

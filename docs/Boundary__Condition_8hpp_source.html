@@ -81,8 +81,7 @@ $(document).ready(function() { init_codefold(0); });
   <div class="headertitle"><div class="title">Boundary_Condition.hpp</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="Boundary__Condition_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="foldopen" id="foldopen00001" data-start="{" data-end="}">
-<div class="line"><a id="l00001" name="l00001"></a><span class="lineno"><a class="line" href="Boundary__Condition_8hpp.html#a28f2f3f4c67fff779a2d2f2374c04ac1">    1</a></span><span class="preprocessor">#ifndef BOUNDARY_CONDITION_HPP</span></div>
+<a href="Boundary__Condition_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef BOUNDARY_CONDITION_HPP</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define BOUNDARY_CONDITION_HPP</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;iostream&gt;</span></div>
@@ -94,34 +93,55 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">using </span>tensor = torch::Tensor;</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">class </span><a class="code hl_function" href="Boundary__Condition_8hpp.html#a28f2f3f4c67fff779a2d2f2374c04ac1">__attribute__</a>((visibility(<span class="stringliteral">&quot;hidden&quot;</span>))) <a class="code hl_class" href="classBoundary__Condition.html">Boundary_Condition</a> {    </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    std::function&lt;bool(<span class="keyword">const</span> tensor&amp;, <span class="keywordtype">bool</span>)&gt; on_boundary;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">int</span> component;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    py::handle geom;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <a class="code hl_class" href="classBoundary__Condition.html">Boundary_Condition</a>(py::handle geom, std::function&lt;<span class="keywordtype">bool</span>(<span class="keyword">const</span> tensor&amp;, <span class="keywordtype">bool</span>)&gt; on_boundary, <span class="keywordtype">int</span> component = 0):</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        geom(geom), on_boundary(on_boundary), component(component) {};</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keyword">virtual</span> <a class="code hl_class" href="classBoundary__Condition.html">~Boundary_Condition</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">virtual</span> tensor filter(<span class="keyword">const</span> tensor&amp; X) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keyword">virtual</span> tensor collocation_points(<span class="keyword">const</span> tensor&amp; X) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keyword">virtual</span> tensor error(<span class="keyword">const</span> tensor&amp; X, </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>                          <span class="keyword">const</span> tensor&amp; inputs, </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>                          <span class="keyword">const</span> tensor&amp; outputs, </div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>                          <span class="keywordtype">int</span> beg, <span class="keywordtype">int</span> end) <span class="keyword">const</span> = 0;</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>};</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment">// These pragmas silence GCC&#39;s -Wattributes visibility warnings. See the note at</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment">// the end of this file for details.</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#if defined(__GNUC__)</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#pragma GCC diagnostic push</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#pragma GCC diagnostic ignored &quot;-Wattributes&quot;</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="foldopen" id="foldopen00037" data-start="{" data-end="};">
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html">   37</a></span><span class="keyword">class </span><a class="code hl_class" href="classBoundary__Condition.html">Boundary_Condition</a> {    </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">   47</a></span>    std::function&lt;bool(<span class="keyword">const</span> tensor&amp;, <span class="keywordtype">bool</span>)&gt; <a class="code hl_variable" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">on_boundary</a>;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">   50</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">component</a>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">   53</a></span>    py::handle <a class="code hl_variable" href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">geom</a>;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">public</span>:</div>
+<div class="foldopen" id="foldopen00062" data-start="{" data-end="}">
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html#ada63077f3ac529272e68abfd2b112cb6">   62</a></span>    <a class="code hl_function" href="classBoundary__Condition.html#ada63077f3ac529272e68abfd2b112cb6">Boundary_Condition</a>(py::handle <a class="code hl_variable" href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">geom</a>, std::function&lt;<span class="keywordtype">bool</span>(<span class="keyword">const</span> tensor&amp;, <span class="keywordtype">bool</span>)&gt; <a class="code hl_variable" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">on_boundary</a>, <span class="keywordtype">int</span> <a class="code hl_variable" href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">component</a> = 0):</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>        <a class="code hl_variable" href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">geom</a>(<a class="code hl_variable" href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">geom</a>), <a class="code hl_variable" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">on_boundary</a>(<a class="code hl_variable" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">on_boundary</a>), <a class="code hl_variable" href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">component</a>(<a class="code hl_variable" href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">component</a>) {};</div>
 </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aBoundary__Condition_8hpp_html_a28f2f3f4c67fff779a2d2f2374c04ac1"><div class="ttname"><a href="Boundary__Condition_8hpp.html#a28f2f3f4c67fff779a2d2f2374c04ac1">__attribute__</a></div><div class="ttdeci">class __attribute__((visibility(&quot;hidden&quot;))) Boundary_Condition</div><div class="ttdef"><b>Definition</b> Boundary_Condition.hpp:28</div></div>
-<div class="ttc" id="aclassBoundary__Condition_html"><div class="ttname"><a href="classBoundary__Condition.html">Boundary_Condition</a></div><div class="ttdoc">Abstract base class for boundary conditions.</div></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html#a9964661d3438ba9bd029d2efc674c1c7">   68</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classBoundary__Condition.html#a9964661d3438ba9bd029d2efc674c1c7">~Boundary_Condition</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keyword">virtual</span> tensor <a class="code hl_function" href="classBoundary__Condition.html#adc074e07cce9d94b10363390b11fd7e8">filter</a>(<span class="keyword">const</span> tensor&amp; X) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keyword">virtual</span> tensor <a class="code hl_function" href="classBoundary__Condition.html#ae1db758d7546d642b1509fd3c3be244b">collocation_points</a>(<span class="keyword">const</span> tensor&amp; X) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno"><a class="line" href="classBoundary__Condition.html#a91e5eac84af468c3dbd75769d00c7624">  105</a></span>    <span class="keyword">virtual</span> tensor <a class="code hl_function" href="classBoundary__Condition.html#a91e5eac84af468c3dbd75769d00c7624">error</a>(<span class="keyword">const</span> tensor&amp; X, </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>                          <span class="keyword">const</span> tensor&amp; inputs, </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>                          <span class="keyword">const</span> tensor&amp; outputs, </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>                          <span class="keywordtype">int</span> beg, <span class="keywordtype">int</span> end) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>};</div>
+</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="preprocessor">#if defined(__GNUC__)</span></div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="preprocessor">#pragma GCC diagnostic pop</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassBoundary__Condition_html"><div class="ttname"><a href="classBoundary__Condition.html">Boundary_Condition</a></div><div class="ttdoc">Abstract base class for boundary conditions.</div><div class="ttdef"><b>Definition</b> Boundary_Condition.hpp:37</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_a8eb5bd13a824c96ecb13d90e4602d4ee"><div class="ttname"><a href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">Boundary_Condition::component</a></div><div class="ttdeci">int component</div><div class="ttdoc">Output component index this BC acts on.</div><div class="ttdef"><b>Definition</b> Boundary_Condition.hpp:50</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_a91e5eac84af468c3dbd75769d00c7624"><div class="ttname"><a href="classBoundary__Condition.html#a91e5eac84af468c3dbd75769d00c7624">Boundary_Condition::error</a></div><div class="ttdeci">virtual tensor error(const tensor &amp;X, const tensor &amp;inputs, const tensor &amp;outputs, int beg, int end) const =0</div><div class="ttdoc">Compute the loss/error for this boundary condition. Pure virtual method - must be implemented by deri...</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_a9964661d3438ba9bd029d2efc674c1c7"><div class="ttname"><a href="classBoundary__Condition.html#a9964661d3438ba9bd029d2efc674c1c7">Boundary_Condition::~Boundary_Condition</a></div><div class="ttdeci">virtual ~Boundary_Condition()=default</div><div class="ttdoc">Virtual destructor.</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_aafbadbcb7f012b5148623b28ece4e556"><div class="ttname"><a href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">Boundary_Condition::on_boundary</a></div><div class="ttdeci">std::function&lt; bool(const tensor &amp;, bool)&gt; on_boundary</div><div class="ttdoc">Callback deciding whether a point lies on the boundary.</div><div class="ttdef"><b>Definition</b> Boundary_Condition.hpp:47</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_ab95ade7666c9d8d135b9bf5cb6bd170a"><div class="ttname"><a href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">Boundary_Condition::geom</a></div><div class="ttdeci">py::handle geom</div><div class="ttdoc">Handle to the DeepXDE geometry object (Python).</div><div class="ttdef"><b>Definition</b> Boundary_Condition.hpp:53</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_ada63077f3ac529272e68abfd2b112cb6"><div class="ttname"><a href="classBoundary__Condition.html#ada63077f3ac529272e68abfd2b112cb6">Boundary_Condition::Boundary_Condition</a></div><div class="ttdeci">Boundary_Condition(py::handle geom, std::function&lt; bool(const tensor &amp;, bool)&gt; on_boundary, int component=0)</div><div class="ttdoc">Constructor for Boundary_Condition.</div><div class="ttdef"><b>Definition</b> Boundary_Condition.hpp:62</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_adc074e07cce9d94b10363390b11fd7e8"><div class="ttname"><a href="classBoundary__Condition.html#adc074e07cce9d94b10363390b11fd7e8">Boundary_Condition::filter</a></div><div class="ttdeci">virtual tensor filter(const tensor &amp;X) const</div><div class="ttdoc">Filter points that are on the boundary.</div><div class="ttdef"><b>Definition</b> Boundary_Condition.cpp:15</div></div>
+<div class="ttc" id="aclassBoundary__Condition_html_ae1db758d7546d642b1509fd3c3be244b"><div class="ttname"><a href="classBoundary__Condition.html#ae1db758d7546d642b1509fd3c3be244b">Boundary_Condition::collocation_points</a></div><div class="ttdeci">virtual tensor collocation_points(const tensor &amp;X) const</div><div class="ttdoc">Get collocation points (points where Boundary_Condition is enforced).</div><div class="ttdef"><b>Definition</b> Boundary_Condition.cpp:61</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

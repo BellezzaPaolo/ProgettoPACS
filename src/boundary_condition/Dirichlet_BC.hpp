@@ -9,6 +9,14 @@
  * @brief Dirichlet boundary condition implementation.
  */
 
+/// \cond DOXYGEN_SHOULD_SKIP_THIS
+// These pragmas silence GCC's -Wattributes visibility warnings. See the note at
+// the end of this file for details.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+/// \endcond
 /**
  * @class Dirichlet_BC
  * @brief Dirichlet boundary condition: y(x) = func(x).
@@ -18,7 +26,7 @@
  * \f[ e(x) = u(x) - g(x) \f]
  * where `u(x)` is the network output and `g(x)` is the provided boundary target.
  */
-class __attribute__((visibility("hidden"))) Dirichlet_BC : public Boundary_Condition {
+class Dirichlet_BC : public Boundary_Condition {
 private:
     std::function<tensor(const tensor&)> func;
     
@@ -54,5 +62,21 @@ public:
               const tensor& outputs, 
               int beg, int end) const override;
 };
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+/**
+ * @note Visibility warning (-Wattributes)
+ * Some toolchains compile third-party headers (e.g. pybind11) with hidden symbol
+ * visibility. Since `Dirichlet_BC` stores pybind11 types (e.g. `py::handle`) and possibly
+ * other types with different visibility, GCC may warn that `Dirichlet_BC` has “greater
+ * visibility” than the type of one of its fields.
+ *
+ * This matters mainly when exporting `Dirichlet_BC` as part of a shared-library ABI.
+ * In this project the executable is the main artifact, so we silence this
+ * warning locally to keep build output clean.
+ */
 
 #endif

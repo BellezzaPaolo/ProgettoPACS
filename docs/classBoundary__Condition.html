@@ -69,7 +69,11 @@ $(function() {
 
 </div><!-- top -->
 <div class="header">
-  <div class="headertitle"><div class="title">Boundary_Condition Class Reference</div></div>
+  <div class="summary">
+<a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="classBoundary__Condition-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">Boundary_Condition Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -77,11 +81,285 @@ $(function() {
  <a href="classBoundary__Condition.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="Boundary__Condition_8hpp_source.html">Boundary_Condition.hpp</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for Boundary_Condition:</div>
+<div class="dyncontent">
+<div class="center"><img src="classBoundary__Condition__inherit__graph.png" border="0" usemap="#aBoundary__Condition_inherit__map" alt="Inheritance graph"/></div>
+<map name="aBoundary__Condition_inherit__map" id="aBoundary__Condition_inherit__map">
+<area shape="rect" title="Abstract base class for boundary conditions." alt="" coords="5,5,159,31"/>
+<area shape="rect" href="classDirichlet__BC.html" title="Dirichlet boundary condition: y(x) = func(x)." alt="" coords="31,79,133,104"/>
+<area shape="poly" title=" " alt="" coords="85,44,85,79,79,79,79,44"/>
+</map>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Public Member Functions</h2></td></tr>
+<tr class="memitem:ada63077f3ac529272e68abfd2b112cb6" id="r_ada63077f3ac529272e68abfd2b112cb6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundary__Condition.html#ada63077f3ac529272e68abfd2b112cb6">Boundary_Condition</a> (py::handle <a class="el" href="classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a">geom</a>, std::function&lt; bool(const tensor &amp;, bool)&gt; <a class="el" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">on_boundary</a>, int <a class="el" href="classBoundary__Condition.html#a8eb5bd13a824c96ecb13d90e4602d4ee">component</a>=0)</td></tr>
+<tr class="memdesc:ada63077f3ac529272e68abfd2b112cb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor for <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a>.  <br /></td></tr>
+<tr class="separator:ada63077f3ac529272e68abfd2b112cb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9964661d3438ba9bd029d2efc674c1c7" id="r_a9964661d3438ba9bd029d2efc674c1c7"><td class="memItemLeft" align="right" valign="top"><a id="a9964661d3438ba9bd029d2efc674c1c7" name="a9964661d3438ba9bd029d2efc674c1c7"></a>
+virtual&#160;</td><td class="memItemRight" valign="bottom"><b>~Boundary_Condition</b> ()=default</td></tr>
+<tr class="memdesc:a9964661d3438ba9bd029d2efc674c1c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual destructor. <br /></td></tr>
+<tr class="separator:a9964661d3438ba9bd029d2efc674c1c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc074e07cce9d94b10363390b11fd7e8" id="r_adc074e07cce9d94b10363390b11fd7e8"><td class="memItemLeft" align="right" valign="top">virtual tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundary__Condition.html#adc074e07cce9d94b10363390b11fd7e8">filter</a> (const tensor &amp;X) const</td></tr>
+<tr class="memdesc:adc074e07cce9d94b10363390b11fd7e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filter points that are on the boundary.  <br /></td></tr>
+<tr class="separator:adc074e07cce9d94b10363390b11fd7e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1db758d7546d642b1509fd3c3be244b" id="r_ae1db758d7546d642b1509fd3c3be244b"><td class="memItemLeft" align="right" valign="top">virtual tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundary__Condition.html#ae1db758d7546d642b1509fd3c3be244b">collocation_points</a> (const tensor &amp;X) const</td></tr>
+<tr class="memdesc:ae1db758d7546d642b1509fd3c3be244b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get collocation points (points where <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a> is enforced).  <br /></td></tr>
+<tr class="separator:ae1db758d7546d642b1509fd3c3be244b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91e5eac84af468c3dbd75769d00c7624" id="r_a91e5eac84af468c3dbd75769d00c7624"><td class="memItemLeft" align="right" valign="top">virtual tensor&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundary__Condition.html#a91e5eac84af468c3dbd75769d00c7624">error</a> (const tensor &amp;X, const tensor &amp;inputs, const tensor &amp;outputs, int beg, int end) const =0</td></tr>
+<tr class="memdesc:a91e5eac84af468c3dbd75769d00c7624"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the loss/error for this boundary condition. Pure virtual method - must be implemented by derived classes.  <br /></td></tr>
+<tr class="separator:a91e5eac84af468c3dbd75769d00c7624"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:aafbadbcb7f012b5148623b28ece4e556" id="r_aafbadbcb7f012b5148623b28ece4e556"><td class="memItemLeft" align="right" valign="top">std::function&lt; bool(const tensor &amp;, bool)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556">on_boundary</a></td></tr>
+<tr class="memdesc:aafbadbcb7f012b5148623b28ece4e556"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback deciding whether a point lies on the boundary.  <br /></td></tr>
+<tr class="separator:aafbadbcb7f012b5148623b28ece4e556"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8eb5bd13a824c96ecb13d90e4602d4ee" id="r_a8eb5bd13a824c96ecb13d90e4602d4ee"><td class="memItemLeft" align="right" valign="top"><a id="a8eb5bd13a824c96ecb13d90e4602d4ee" name="a8eb5bd13a824c96ecb13d90e4602d4ee"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>component</b></td></tr>
+<tr class="memdesc:a8eb5bd13a824c96ecb13d90e4602d4ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output component index this BC acts on. <br /></td></tr>
+<tr class="separator:a8eb5bd13a824c96ecb13d90e4602d4ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab95ade7666c9d8d135b9bf5cb6bd170a" id="r_ab95ade7666c9d8d135b9bf5cb6bd170a"><td class="memItemLeft" align="right" valign="top"><a id="ab95ade7666c9d8d135b9bf5cb6bd170a" name="ab95ade7666c9d8d135b9bf5cb6bd170a"></a>
+py::handle&#160;</td><td class="memItemRight" valign="bottom"><b>geom</b></td></tr>
+<tr class="memdesc:ab95ade7666c9d8d135b9bf5cb6bd170a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle to the DeepXDE geometry object (Python). <br /></td></tr>
+<tr class="separator:ab95ade7666c9d8d135b9bf5cb6bd170a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Abstract base class for boundary conditions. </p>
 <p>This is the parent class for all boundary conditions (Dirichlet, Neumann, Robin, Periodic, etc.). </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="ada63077f3ac529272e68abfd2b112cb6" name="ada63077f3ac529272e68abfd2b112cb6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada63077f3ac529272e68abfd2b112cb6">&#9670;&#160;</a></span>Boundary_Condition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Boundary_Condition::Boundary_Condition </td>
+          <td>(</td>
+          <td class="paramtype">py::handle&#160;</td>
+          <td class="paramname"><em>geom</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::function&lt; bool(const tensor &amp;, bool)&gt;&#160;</td>
+          <td class="paramname"><em>on_boundary</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>component</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructor for <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">geom</td><td>A geometry instance. </td></tr>
+    <tr><td class="paramname">on_boundary</td><td>A function that determines if a point is on the boundary. </td></tr>
+    <tr><td class="paramname">component</td><td>The output component satisfying this <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a> (default: 0). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae1db758d7546d642b1509fd3c3be244b" name="ae1db758d7546d642b1509fd3c3be244b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1db758d7546d642b1509fd3c3be244b">&#9670;&#160;</a></span>collocation_points()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tensor Boundary_Condition::collocation_points </td>
+          <td>(</td>
+          <td class="paramtype">const tensor &amp;&#160;</td>
+          <td class="paramname"><em>X</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get collocation points (points where <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a> is enforced). </p>
+<p>Default implementation delegates to <code>filter(X)</code>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">X</td><td>Input points matrix <code>[N, dim]</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Collocation points on the boundary <code>[M, dim]</code>. </dd></dl>
+
+</div>
+</div>
+<a id="a91e5eac84af468c3dbd75769d00c7624" name="a91e5eac84af468c3dbd75769d00c7624"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91e5eac84af468c3dbd75769d00c7624">&#9670;&#160;</a></span>error()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual tensor Boundary_Condition::error </td>
+          <td>(</td>
+          <td class="paramtype">const tensor &amp;&#160;</td>
+          <td class="paramname"><em>X</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tensor &amp;&#160;</td>
+          <td class="paramname"><em>inputs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const tensor &amp;&#160;</td>
+          <td class="paramname"><em>outputs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>beg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>end</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Compute the loss/error for this boundary condition. Pure virtual method - must be implemented by derived classes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">X</td><td>Full set of training points (DeepXDE-style: <code>train_x_all</code>). </td></tr>
+    <tr><td class="paramname">inputs</td><td>Batch input points <code>[N_batch, dim]</code>. </td></tr>
+    <tr><td class="paramname">outputs</td><td>Network outputs evaluated at <code>inputs</code>, shape <code>[N_batch, out_dim]</code>. </td></tr>
+    <tr><td class="paramname">beg</td><td>Beginning row (inclusive) of this BC segment inside the batch. </td></tr>
+    <tr><td class="paramname">end</td><td>Ending row (exclusive) of this BC segment inside the batch. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error tensor of shape <code>[end-beg, 1]</code>. </dd></dl>
+
+<p>Implemented in <a class="el" href="classDirichlet__BC.html#a36228c17601939a1eea8405a0e12a50f">Dirichlet_BC</a>.</p>
+
+</div>
+</div>
+<a id="adc074e07cce9d94b10363390b11fd7e8" name="adc074e07cce9d94b10363390b11fd7e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc074e07cce9d94b10363390b11fd7e8">&#9670;&#160;</a></span>filter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">tensor Boundary_Condition::filter </td>
+          <td>(</td>
+          <td class="paramtype">const tensor &amp;&#160;</td>
+          <td class="paramname"><em>X</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Filter points that are on the boundary. </p>
+<p>This method calls the Python geometry predicate <code>geom.on_boundary(X)</code> to get a boolean mask and then applies the user-provided <code><a class="el" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556" title="Callback deciding whether a point lies on the boundary.">on_boundary(x_i, mask_i)</a></code> callback to decide which points to keep.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">X</td><td>Input points matrix <code>[N, dim]</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Filtered points of shape <code>[M, dim]</code> with <code>M &lt;= N</code>. </dd></dl>
+<p>X is assumed to be of shape <code>[N, dim]</code>.</p>
+<p>Convert <code>X</code> to a NumPy array to call Python <code>geom.on_boundary</code> (DeepXDE-style API).</p>
+<p><code>geom.on_boundary</code> returns a boolean array of shape <code>[N]</code>.</p>
+<p>Build a 1D tensor view for the i-th point, shape <code>[dim]</code>.</p>
+<p>Stack the selected rows into the filtered tensor.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="aafbadbcb7f012b5148623b28ece4e556" name="aafbadbcb7f012b5148623b28ece4e556"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafbadbcb7f012b5148623b28ece4e556">&#9670;&#160;</a></span>on_boundary</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::function&lt;bool(const tensor&amp;, bool)&gt; Boundary_Condition::on_boundary</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Callback deciding whether a point lies on the boundary. </p>
+<p>The callback signature is <code><a class="el" href="classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556" title="Callback deciding whether a point lies on the boundary.">on_boundary(x, on_bc_mask)</a></code> where:</p><ul>
+<li><code>x</code> is a 1D tensor view of one point, shape <code>[dim]</code></li>
+<li><code>on_bc_mask</code> is the boolean mask element returned by Python <code>geom.on_boundary(X)</code>. </li>
+</ul>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/boundary_condition/<a class="el" href="Boundary__Condition_8hpp_source.html">Boundary_Condition.hpp</a></li>
+<li>src/boundary_condition/<a class="el" href="Boundary__Condition_8cpp.html">Boundary_Condition.cpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

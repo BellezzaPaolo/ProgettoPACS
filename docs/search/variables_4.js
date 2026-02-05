@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['n_5ffine_0',['n_fine',['../structResult.html#a88f0e09b003c655df4d63f1f0c6fbf9b',1,'Result']]]
+  ['geom_0',['geom',['../classBoundary__Condition.html#ab95ade7666c9d8d135b9bf5cb6bd170a',1,'Boundary_Condition']]]
 ];

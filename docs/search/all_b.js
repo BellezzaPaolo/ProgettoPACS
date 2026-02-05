@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['model_0',['model',['../classModel.html',1,'Model&lt; NetT &gt;'],['../classModel.html#adc9fafc168e7ae96c17ed1c9728e60d8',1,'Model::Model()']]],
-  ['model_2ehpp_1',['Model.hpp',['../Model_8hpp.html',1,'']]]
+  ['n_5ffine_0',['n_fine',['../structResult.html#a88f0e09b003c655df4d63f1f0c6fbf9b',1,'Result']]],
+  ['notes_1',['Notes',['../index.html#autotoc_md9',1,'']]],
+  ['notes_20paths_2',['Configuration notes (paths)',['../index.html#autotoc_md5',1,'']]]
 ];

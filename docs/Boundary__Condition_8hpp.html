@@ -74,8 +74,8 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a>  </div>
   <div class="headertitle"><div class="title">Boundary_Condition.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -134,16 +134,17 @@ This graph shows which files directly or indirectly include this file:</div>
 </div>
 <p><a href="Boundary__Condition_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classBoundary__Condition.html">Boundary_Condition</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract base class for boundary conditions.  <a href="classBoundary__Condition.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a0e6fc41bf71a07870405237d1b9599a5" id="r_a0e6fc41bf71a07870405237d1b9599a5"><td class="memItemLeft" align="right" valign="top"><a id="a0e6fc41bf71a07870405237d1b9599a5" name="a0e6fc41bf71a07870405237d1b9599a5"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>tensor</b> = torch::Tensor</td></tr>
 <tr class="separator:a0e6fc41bf71a07870405237d1b9599a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:a28f2f3f4c67fff779a2d2f2374c04ac1" id="r_a28f2f3f4c67fff779a2d2f2374c04ac1"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Boundary__Condition_8hpp.html#a28f2f3f4c67fff779a2d2f2374c04ac1">__attribute__</a> ((visibility(&quot;hidden&quot;))) <a class="el" href="classBoundary__Condition.html">Boundary_Condition</a></td></tr>
-<tr class="separator:a28f2f3f4c67fff779a2d2f2374c04ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Abstract boundary-condition interface (DeepXDE-like) for PINNs. </p>
@@ -151,72 +152,7 @@ Functions</h2></td></tr>
 <li>selecting boundary collocation points from a candidate set</li>
 <li>computing an error tensor (residual) that will be converted to a scalar loss </li>
 </ul>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a id="a28f2f3f4c67fff779a2d2f2374c04ac1" name="a28f2f3f4c67fff779a2d2f2374c04ac1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a28f2f3f4c67fff779a2d2f2374c04ac1">&#9670;&#160;</a></span>__attribute__()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">class __attribute__ </td>
-          <td>(</td>
-          <td class="paramtype">(visibility(&quot;hidden&quot;))&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Callback deciding whether a point lies on the boundary.</p>
-<p>The callback signature is <code>on_boundary(x, on_bc_mask)</code> where:</p><ul>
-<li><code>x</code> is a 1D tensor view of one point, shape <code>[dim]</code></li>
-<li><code>on_bc_mask</code> is the boolean mask element returned by Python <code>geom.on_boundary(X)</code>.</li>
-</ul>
-<p>Output component index this BC acts on.</p>
-<p>Handle to the DeepXDE geometry object (Python).</p>
-<p>Constructor for <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a>. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">geom</td><td>A geometry instance. </td></tr>
-    <tr><td class="paramname">on_boundary</td><td>A function that determines if a point is on the boundary. </td></tr>
-    <tr><td class="paramname">component</td><td>The output component satisfying this <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a> (default: 0).</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Virtual destructor.</p>
-<p>Filter points that are on the boundary.</p>
-<p>This method calls the Python geometry predicate <code>geom.on_boundary(X)</code> to get a boolean mask and then applies the user-provided <code>on_boundary(x_i, mask_i)</code> callback to decide which points to keep.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">X</td><td>Input points matrix <code>[N, dim]</code>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Filtered points of shape <code>[M, dim]</code> with <code>M &lt;= N</code>.</dd></dl>
-<p>Get collocation points (points where <a class="el" href="classBoundary__Condition.html" title="Abstract base class for boundary conditions.">Boundary_Condition</a> is enforced).</p>
-<p>Default implementation delegates to <code>filter(X)</code>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">X</td><td>Input points matrix <code>[N, dim]</code>. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Collocation points on the boundary <code>[M, dim]</code>.</dd></dl>
-<p>Compute the loss/error for this boundary condition. Pure virtual method - must be implemented by derived classes.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">X</td><td>Full set of training points (DeepXDE-style: <code>train_x_all</code>). </td></tr>
-    <tr><td class="paramname">inputs</td><td>Batch input points <code>[N_batch, dim]</code>. </td></tr>
-    <tr><td class="paramname">outputs</td><td>Network outputs evaluated at <code>inputs</code>, shape <code>[N_batch, out_dim]</code>. </td></tr>
-    <tr><td class="paramname">beg</td><td>Beginning row (inclusive) of this BC segment inside the batch. </td></tr>
-    <tr><td class="paramname">end</td><td>Ending row (exclusive) of this BC segment inside the batch. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Error tensor of shape <code>[end-beg, 1]</code>.</dd></dl>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8

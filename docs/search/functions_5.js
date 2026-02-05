@@ -1,6 +1,10 @@
 var searchData=
 [
-  ['initialize_0',['initialize',['../classFNN.html#aac1918e524f6b9f46dde27fcc635caa9',1,'FNN']]],
-  ['initialize_5fbias_1',['initialize_bias',['../classFNN.html#aff4c06e677c981c1c3362909300b0baf',1,'FNN']]],
-  ['initialize_5fweight_2',['initialize_weight',['../classFNN.html#a692d1a25b0c4b853a22781c5d253bbf2',1,'FNN']]]
+  ['get_5factivation_0',['get_activation',['../classFNN.html#a5850c0802934f85019ea3eb8566c8b68',1,'FNN']]],
+  ['get_5flayer_5fsizes_1',['get_layer_sizes',['../classFNN.html#aad9a98a5baf24ef3bf56d222fc67dc8e',1,'FNN']]],
+  ['get_5floss_2',['get_loss',['../Losses_8hpp.html#a189a43f56366d6d56409283dddd18fe0',1,'losses']]],
+  ['get_5floss_5fhistory_5ftest_3',['get_loss_history_test',['../classOptimizer.html#a4ded6e28243831292ede058be54d9dc1',1,'Optimizer']]],
+  ['get_5floss_5fhistory_5ftrain_4',['get_loss_history_train',['../classOptimizer.html#ab6e0d6411bed20785b47ec843c3704f4',1,'Optimizer']]],
+  ['get_5ftest_5',['get_test',['../classPde.html#af61de375568c04fc6ddc626ad04cad46',1,'Pde']]],
+  ['gradient_5fdescent_6',['Gradient_Descent',['../classGradient__Descent.html#af63b82b01d38205d0d7c7f182ba3ea57',1,'Gradient_Descent']]]
 ];

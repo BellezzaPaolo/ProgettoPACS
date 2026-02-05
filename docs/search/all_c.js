@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['n_5ffine_0',['n_fine',['../structResult.html#a88f0e09b003c655df4d63f1f0c6fbf9b',1,'Result']]],
-  ['notes_1',['Notes',['../index.html#autotoc_md9',1,'']]],
-  ['notes_20paths_2',['Configuration notes (paths)',['../index.html#autotoc_md5',1,'']]]
+  ['on_5fboundary_0',['on_boundary',['../classBoundary__Condition.html#aafbadbcb7f012b5148623b28ece4e556',1,'Boundary_Condition']]],
+  ['optimizer_1',['optimizer',['../classOptimizer.html',1,'Optimizer&lt; NetT &gt;'],['../classOptimizer.html#a5b5c97ccf1282712b3bb08c1bd969a6d',1,'Optimizer::Optimizer()']]],
+  ['optimizer_2ehpp_2',['Optimizer.hpp',['../Optimizer_8hpp.html',1,'']]]
 ];
