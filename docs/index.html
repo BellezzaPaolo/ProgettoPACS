@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: C++ / LibTorch implementation (pybind11 + DeepXDE)</title>
+<title>ParaflowS PINN: C++ / LibTorch implementation (pybind11 + DeepXDE)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">My Project
+   <div id="projectname">ParaflowS PINN
    </div>
   </td>
  </tr>
@@ -76,7 +76,7 @@ $(function() {
 <p>The key idea is:</p><ul>
 <li>use <b>LibTorch</b> for the neural network, autograd, and optimizers</li>
 <li>use <b>pybind11 (embedded Python)</b> to call <b>DeepXDE geometry</b> utilities (sampling points, <code>geom.on_boundary</code>, etc.)</li>
-<li>keep the training pipeline close to the DeepXDE API style (<code><a class="el" href="classPde.html" title="PDE + BC data container and batching utility.">Pde</a></code> + <code><a class="el" href="classModel.html">Model</a></code> + optimizers returning a <code><a class="el" href="structResult.html" title="Training summary returned by optimizers.">Result</a></code>) in order to be easily and very intuitive to extend.</li>
+<li>keep the training pipeline close to the DeepXDE API style (<code><a class="el" href="classPde.html" title="PDE + BC data container and batching utility.">Pde</a></code> + <code><a class="el" href="classModel.html" title="Coordinator class to compile and train the model.">Model</a></code> + optimizers returning a <code><a class="el" href="structResult.html" title="Training summary returned by optimizers.">Result</a></code>) in order to be easily and very intuitive to extend.</li>
 </ul>
 <p>This project currently builds two executables:</p><ul>
 <li><a href="PoissonLshape.cpp">src/PoissonLshape.cpp</a>: example presented in the paper <a href="https://doi.org/10.1137/19M1274067">DeepXDE: A Deep Learning Library for Solving Differential Equations</a>, section 4.1.COnsider 2D Poisson problem over the domain $\Omega = [-1,1]^2 \setminus [0,1]^2$: $$ \begin{cases} -\Delta u = 1 &amp; \text{in } \Omega,\ u = 0 &amp; \text{on } \partial\Omega, \end{cases} $$</li>
@@ -91,7 +91,7 @@ Contents</h1>
 <li><a href="Model.hpp">src/Model.hpp</a>: DeepXDE-like facade (<code>compile</code>, <code>train</code>, <code>save_data</code>, <code>plot_loss_history</code>)</li>
 <li><a href="FNN.hpp">src/FNN.hpp</a>: fully-connected network and initializers</li>
 <li><a href="operator/Differential_Operators.hpp">src/operator/Differential_Operators.hpp</a>: autograd-based operators. By now it supports only Laplacian but can be upgraded.</li>
-<li>[src/optimizer](optimizer): <code><a class="el" href="classOptimizer.html">Optimizer</a></code> abstract class,<code><a class="el" href="classGradient__Descent.html">Gradient_Descent</a></code> (SGD) and <code><a class="el" href="classParaflowS.html" title="ParaFlowS optimizer/trainer for the torch PINN pipeline.">ParaflowS</a></code></li>
+<li>[src/optimizer](optimizer): <code><a class="el" href="classOptimizer.html" title="Abstract class base for optimizer/trainer for the torch PINN pipeline.">Optimizer</a></code> abstract class,<code><a class="el" href="classGradient__Descent.html" title="Gradient Descent optimizer/trainer for the torch PINN pipeline.">Gradient_Descent</a></code> (SGD) and <code><a class="el" href="classParaflowS.html" title="ParaFlowS optimizer/trainer for the torch PINN pipeline.">ParaflowS</a></code></li>
 <li>[src/boundary_condition](boundary_condition): boundary-condition base and Dirichlet BC. By now support only Dirichlet boundary condition but can be upgraded.</li>
 </ul>
 <p>Outputs are written to [src/results](results) (CSV files), folder not commited but the code is made deterministic and so reproducible.</p>
@@ -127,8 +127,7 @@ Build</h1>
 <div class="fragment"><div class="line">cd src</div>
 <div class="line">cmake -S . -B build</div>
 <div class="line">cmake --build build -j</div>
-</div><!-- fragment --><p>This produces the <code>example</code> executable under <code>src/build/</code>.</p>
-<p>This produces two executables under <code>src/build/</code>:</p><ul>
+</div><!-- fragment --><p>This produces two executables under <code>src/build/</code>:</p><ul>
 <li><code>test</code></li>
 <li><code>poisson_lshape</code></li>
 </ul>
@@ -152,12 +151,12 @@ What the executables do</h1>
 <li>Defines the PDE residual using autograd Laplacian</li>
 </ul>
 <p><code>parameter_test.cpp</code> runs a sweep over learning rates and budgets for:</p><ul>
-<li>SGD (called <code>SGD</code> / <code><a class="el" href="classGradient__Descent.html">Gradient_Descent</a></code> in the code)</li>
+<li>SGD (called <code>SGD</code> / <code><a class="el" href="classGradient__Descent.html" title="Gradient Descent optimizer/trainer for the torch PINN pipeline.">Gradient_Descent</a></code> in the code)</li>
 <li>ParaFlowS with multiple <code>n_fine</code></li>
+<li>Appends one CSV row per training run via <code>Model::save_data(...)</code></li>
 </ul>
-<p>Appends one CSV row per training run via <code>Model::save_data(...)</code></p>
 <p><code>PoissonLshape.cpp</code> runs a single training configuration (useful as a quick demo / smoke test).</p>
-<p>The CSV is written to: <a href="results/Poisson_Lshape_0.csv">src/results/Poisson_Lshape_0.csv</a></p>
+<p>The CSV is written to: <a href="results/">src/results/</a>. The results are not uploaded but the seed is set and so it's fully reproducible.</p>
 <h1><a class="anchor" id="autotoc_md9"></a>
 Notes</h1>
 <ul>
@@ -168,7 +167,7 @@ Notes</h1>
 Documentation (Doxygen)</h1>
 <p>The repo includes a <a href="../Doxyfile">Doxyfile</a>. To generate docs:</p>
 <div class="fragment"><div class="line">doxygen Doxyfile</div>
-</div><!-- fragment --><p>Generated outputs are written under <code>html/</code> and <code>latex/</code> at the repository root. </p>
+</div><!-- fragment --><p>Generated outputs are written under <code>docs/</code> and <code>latex/</code> at the repository root. Also the documentation is available at this <a href="https://bellezzapaolo.github.io/ProgettoPACS/">link</a>. </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->

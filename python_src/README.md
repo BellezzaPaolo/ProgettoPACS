@@ -42,6 +42,7 @@ In particular:
 
 # Tests
 The 3 files to test the code should be executed after the installation of DeepXDE. Even if 2 of them doesn't use DeepXDE, import from that folder the callback and the ParaFlowS classes so if you don't want to install DeepXDE adapt the imports. The 3 files contain:
-- `Higham_test.py`: This test implements a classification problem of 10 points in the domain $[0,1]^2$. This is taken from the example at this [paper](https://doi.org/10.1137/18M1165748)
-- `Smorzato_test.py`:
-- `Poisson_Lshape.py`:
+- `Higham_test.py`: A classification of two areas in a domain needs to be obtained by a 10 points data set. This is done by training a neural network with four layers, denoted [2,3,3,2]: input and output layers of two neurons and two hidden layers of three neurons. The sigmoid is used as activation function. This is taken from the example at this [paper](https://doi.org/10.1137/18M1165748).
+- `Smorzato_test.py`: consider a neural network of four layers, [1,16,16,1]: input and output layers of one neuron and two hidden layers of 16 neurons. The activation function is the standard sigmoid. The goal is to approximate the function $f (x) = exp(−x) sin(x)$ for $x \in [0, 10]$ using a training set $\{x_i\}_{i=1}^{30}$ obtained by 30 equispaced points in [0, 10] and the corresponding values $f (x_i ), i = 1, . . . , 30$.
+- `Poisson_Lshape.py`: The goal is to train a PINN with the structure [2,50,50,50,50,1] (an input layer of two neurons, four hidden layers of 50
+neurons, and one output layer of one neuron) for solving the Poisson problem $−\Delta u = 1 $ in an L-shaped domain $\Omega$, with homogeneous Dirichlet boundary conditions. The training set is formed by 120 and 1320 points on $\partial \Omega$ and in $\Omega$, respectively.

@@ -69,8 +69,6 @@ cmake -S . -B build
 cmake --build build -j
 ```
 
-This produces the `example` executable under `src/build/`.
-
 This produces two executables under `src/build/`:
 - `test`
 - `poisson_lshape`
@@ -78,14 +76,6 @@ This produces two executables under `src/build/`:
 ## Run
 
 The CMake project defines run targets that set `PYTHONHOME` and `LD_LIBRARY_PATH` so the embedded Python can find its shared libraries:
-
-```bash
-cd src
-cmake --build build --target run_test
-cmake --build build --target run_poissonlshape
-```
-
-If you prefer Makefile-style:
 
 ```bash
 cd src/build
@@ -105,11 +95,11 @@ The current entry points are [src/parameter_test.cpp](parameter_test.cpp) and [s
 `parameter_test.cpp` runs a sweep over learning rates and budgets for:
 	- SGD (called `SGD` / `Gradient_Descent` in the code)
 	- ParaFlowS with multiple `n_fine`
-- Appends one CSV row per training run via `Model::save_data(...)`
+	- Appends one CSV row per training run via `Model::save_data(...)`
 
 `PoissonLshape.cpp` runs a single training configuration (useful as a quick demo / smoke test).
 
-The CSV is written to: [src/results/Poisson_Lshape_0.csv](results/Poisson_Lshape_0.csv)
+The CSV is written to: [src/results/](results/). The results are not uploaded but the seed is set and so it's fully reproducible.
 
 ## Notes
 
@@ -124,5 +114,5 @@ The repo includes a [Doxyfile](../Doxyfile). To generate docs:
 doxygen Doxyfile
 ```
 
-Generated outputs are written under `html/` and `latex/` at the repository root.
+Generated outputs are written under `docs/` and `latex/` at the repository root. Also the documentation is available at this [link](https://bellezzapaolo.github.io/ProgettoPACS/).
 

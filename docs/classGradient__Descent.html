@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Gradient_Descent&lt; NetT &gt; Class Template Reference</title>
+<title>ParaflowS PINN: Gradient_Descent&lt; NetT &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">My Project
+   <div id="projectname">ParaflowS PINN
    </div>
   </td>
  </tr>
@@ -75,13 +75,18 @@ $(function() {
   <div class="headertitle"><div class="title">Gradient_Descent&lt; NetT &gt; Class Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Gradient Descent optimizer/trainer for the torch PINN pipeline.  
+ <a href="classGradient__Descent.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="Gradient__Descent_8hpp_source.html">Gradient_Descent.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for Gradient_Descent&lt; NetT &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classGradient__Descent__inherit__graph.png" border="0" usemap="#aGradient__Descent_3_01NetT_01_4_inherit__map" alt="Inheritance graph"/></div>
 <map name="aGradient__Descent_3_01NetT_01_4_inherit__map" id="aGradient__Descent_3_01NetT_01_4_inherit__map">
-<area shape="rect" title=" " alt="" coords="5,79,204,104"/>
-<area shape="rect" href="classOptimizer.html" title=" " alt="" coords="31,5,178,31"/>
+<area shape="rect" title="Gradient Descent optimizer/trainer for the torch PINN pipeline." alt="" coords="5,79,204,104"/>
+<area shape="rect" href="classOptimizer.html" title="Abstract class base for optimizer/trainer for the torch PINN pipeline." alt="" coords="31,5,178,31"/>
 <area shape="poly" title=" " alt="" coords="107,44,107,79,102,79,102,44"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -90,8 +95,8 @@ Collaboration diagram for Gradient_Descent&lt; NetT &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classGradient__Descent__coll__graph.png" border="0" usemap="#aGradient__Descent_3_01NetT_01_4_coll__map" alt="Collaboration graph"/></div>
 <map name="aGradient__Descent_3_01NetT_01_4_coll__map" id="aGradient__Descent_3_01NetT_01_4_coll__map">
-<area shape="rect" title=" " alt="" coords="5,79,204,104"/>
-<area shape="rect" href="classOptimizer.html" title=" " alt="" coords="31,5,178,31"/>
+<area shape="rect" title="Gradient Descent optimizer/trainer for the torch PINN pipeline." alt="" coords="5,79,204,104"/>
+<area shape="rect" href="classOptimizer.html" title="Abstract class base for optimizer/trainer for the torch PINN pipeline." alt="" coords="31,5,178,31"/>
 <area shape="poly" title=" " alt="" coords="107,44,107,79,102,79,102,44"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -143,7 +148,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>use_test</b></td></tr
 int&#160;</td><td class="memItemRight" valign="bottom"><b>budget_used</b> = 0</td></tr>
 <tr class="separator:aaad7549516bf5646ca666f77f88d20d4 inherit pro_attribs_classOptimizer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;class NetT&gt;<br />
+class Gradient_Descent&lt; NetT &gt;</div><p>Gradient Descent optimizer/trainer for the torch PINN pipeline. </p>
+<p>This implements the Gradient Descent scheme: This optimizer performs standard stochastic gradient descent using <code>torch::optim::SGD</code> over the network parameters.</p>
+<p>The interface matches the other project optimizers: it derives from <code><a class="el" href="classOptimizer.html" title="Abstract class base for optimizer/trainer for the torch PINN pipeline.">Optimizer</a>&lt;NetT&gt;</code> and implements <code><a class="el" href="classGradient__Descent.html#a91b2774d64fc86bec0b0f923fb0716c9" title="Train using SGD.">train()</a></code>. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="af63b82b01d38205d0d7c7f182ba3ea57" name="af63b82b01d38205d0d7c7f182ba3ea57"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af63b82b01d38205d0d7c7f182ba3ea57">&#9670;&#160;</a></span>Gradient_Descent()</h2>
 

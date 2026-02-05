@@ -24,6 +24,17 @@ namespace py = pybind11;
 
 using tensor = torch::Tensor;
 
+/**
+ * @brief Gradient Descent optimizer/trainer for the torch PINN pipeline.
+ *
+ * @details
+ * This implements the Gradient Descent scheme:
+ * This optimizer performs standard stochastic gradient descent using
+ * `torch::optim::SGD` over the network parameters.
+ *
+ * The interface matches the other project optimizers: it derives from
+ * `Optimizer<NetT>` and implements `train()`.
+ */
 template <class NetT>
 class Gradient_Descent : public Optimizer<NetT> {
 private:

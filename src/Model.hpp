@@ -30,6 +30,8 @@
 #include "optimizer/ParaflowS.hpp"
 
 /**
+ * @brief Coordinator class to compile and train the model
+ * 
  * @details
  * Minimal "Model" wrapper (in the spirit of DeepXDE's `Model`): it holds
  * the data object, the neural network, and an optimizer/trainer.

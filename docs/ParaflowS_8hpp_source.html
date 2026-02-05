@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: src/optimizer/ParaflowS.hpp Source File</title>
+<title>ParaflowS PINN: src/optimizer/ParaflowS.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">My Project
+   <div id="projectname">ParaflowS PINN
    </div>
   </td>
  </tr>
@@ -365,8 +365,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span> </div>
 <div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aOptimizer_8hpp_html"><div class="ttname"><a href="Optimizer_8hpp.html">Optimizer.hpp</a></div><div class="ttdoc">Base optimizer interface and training result container.</div></div>
-<div class="ttc" id="aclassOptimizer_html"><div class="ttname"><a href="classOptimizer.html">Optimizer</a></div><div class="ttdef"><b>Definition</b> Optimizer.hpp:54</div></div>
-<div class="ttc" id="aclassOptimizer_html_a65e102d41563bf228c653dec470d0611"><div class="ttname"><a href="classOptimizer.html#a65e102d41563bf228c653dec470d0611">Optimizer::loss_history_train</a></div><div class="ttdeci">std::vector&lt; double &gt; loss_history_train</div><div class="ttdoc">Loss histories for plotting/diagnostics.</div><div class="ttdef"><b>Definition</b> Optimizer.hpp:64</div></div>
+<div class="ttc" id="aclassOptimizer_html"><div class="ttname"><a href="classOptimizer.html">Optimizer</a></div><div class="ttdoc">Abstract class base for optimizer/trainer for the torch PINN pipeline.</div><div class="ttdef"><b>Definition</b> Optimizer.hpp:57</div></div>
+<div class="ttc" id="aclassOptimizer_html_a65e102d41563bf228c653dec470d0611"><div class="ttname"><a href="classOptimizer.html#a65e102d41563bf228c653dec470d0611">Optimizer::loss_history_train</a></div><div class="ttdeci">std::vector&lt; double &gt; loss_history_train</div><div class="ttdoc">Loss histories for plotting/diagnostics.</div><div class="ttdef"><b>Definition</b> Optimizer.hpp:67</div></div>
 <div class="ttc" id="aclassParaflowS_html"><div class="ttname"><a href="classParaflowS.html">ParaflowS</a></div><div class="ttdoc">ParaFlowS optimizer/trainer for the torch PINN pipeline.</div><div class="ttdef"><b>Definition</b> ParaflowS.hpp:40</div></div>
 <div class="ttc" id="aclassParaflowS_html_a67d2c262718686e3fac58cc202155580"><div class="ttname"><a href="classParaflowS.html#a67d2c262718686e3fac58cc202155580">ParaflowS::ParaflowS</a></div><div class="ttdeci">ParaflowS(std::shared_ptr&lt; Pde &gt; data, std::shared_ptr&lt; NetT &gt; net, double lr_fine, int n_fine, std::function&lt; tensor(const tensor &amp;)&gt; loss_fn, int n_coarse=200)</div><div class="ttdoc">Construct a ParaFlowS optimizer.</div><div class="ttdef"><b>Definition</b> ParaflowS.hpp:203</div></div>
 <div class="ttc" id="aclassParaflowS_html_abfe2488a172ad47771c6d8eb2e1f58be"><div class="ttname"><a href="classParaflowS.html#abfe2488a172ad47771c6d8eb2e1f58be">ParaflowS::train</a></div><div class="ttdeci">Result train(int batch_size, int budget, int max_iterations, bool verbose) override</div><div class="ttdoc">Train using the ParaFlowS scheme.</div><div class="ttdef"><b>Definition</b> ParaflowS.hpp:234</div></div>

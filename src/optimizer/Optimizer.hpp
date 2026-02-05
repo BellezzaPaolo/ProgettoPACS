@@ -50,6 +50,9 @@ struct Result {
     double lr = 0;
 };
 
+/**
+ * @brief Abstract class base for optimizer/trainer for the torch PINN pipeline.
+ */
 template <class NetT>
 class Optimizer {
 protected:
@@ -128,10 +131,10 @@ public:
                 py_test[i] = loss_history_test[i];
             }
             plt.attr("plot")(py_test, py::arg("label") = "test");
-            plt.attr("legend")();
         }
 
         plt.attr("xlabel")("Iteration");
+        plt.attr("legend")();
         plt.attr("ylabel")("Cost");
         plt.attr("title")("Cost History");
         plt.attr("show")();

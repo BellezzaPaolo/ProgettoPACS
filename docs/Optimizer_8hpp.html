@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: src/optimizer/Optimizer.hpp File Reference</title>
+<title>ParaflowS PINN: src/optimizer/Optimizer.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">My Project
+   <div id="projectname">ParaflowS PINN
    </div>
   </td>
  </tr>
@@ -145,6 +145,7 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Training summary returned by optimizers.  <a href="structResult.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classOptimizer.html">Optimizer&lt; NetT &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Abstract class base for optimizer/trainer for the torch PINN pipeline.  <a href="classOptimizer.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -156,7 +157,7 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>tensor</b> = torch::
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base optimizer interface and training result container. </p>
 <p>The project follows a DeepXDE-like design:</p><ul>
-<li><code><a class="el" href="classModel.html">Model</a></code> owns the dataset (<code><a class="el" href="classPde.html" title="PDE + BC data container and batching utility.">Pde</a></code>) and the network.</li>
+<li><code><a class="el" href="classModel.html" title="Coordinator class to compile and train the model.">Model</a></code> owns the dataset (<code><a class="el" href="classPde.html" title="PDE + BC data container and batching utility.">Pde</a></code>) and the network.</li>
 <li>Concrete optimizers implement <code>Optimizer::train(...)</code>.</li>
 <li>Training metadata is returned via <code><a class="el" href="structResult.html" title="Training summary returned by optimizers.">Result</a></code>. </li>
 </ul>

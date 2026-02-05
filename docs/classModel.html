@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Model&lt; NetT &gt; Class Template Reference</title>
+<title>ParaflowS PINN: Model&lt; NetT &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">My Project
+   <div id="projectname">ParaflowS PINN
    </div>
   </td>
  </tr>
@@ -76,6 +76,9 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Coordinator class to compile and train the model.  
+ <a href="classModel.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="Model_8hpp_source.html">Model.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
@@ -116,7 +119,8 @@ const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ge
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;class NetT&gt;<br />
-class Model&lt; NetT &gt;</div><p>Minimal "Model" wrapper (in the spirit of DeepXDE's <code><a class="el" href="classModel.html">Model</a></code>): it holds the data object, the neural network, and an optimizer/trainer.</p>
+class Model&lt; NetT &gt;</div><p>Coordinator class to compile and train the model. </p>
+<p>Minimal "Model" wrapper (in the spirit of DeepXDE's <code><a class="el" href="classModel.html" title="Coordinator class to compile and train the model.">Model</a></code>): it holds the data object, the neural network, and an optimizer/trainer.</p>
 <p>Design choice: <code><a class="el" href="classModel.html#a1e7d7fee0dff330738104b5ed4ff5115" title="Train the compiled model.">Model::train()</a></code> is a thin wrapper that delegates to the real training loop implemented in <code>Optimizer::train(...)</code>.</p>
 <p>The PDE residual itself remains a callable (typically a lambda in <code>main.cpp</code>) stored inside <code><a class="el" href="classPde.html" title="PDE + BC data container and batching utility.">Pde</a></code>. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -219,7 +223,7 @@ template&lt;class NetT &gt; </div>
 <p>Compile the model with an optimizer that does not require <code>n_fine</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">optimizer_name</td><td><a class="el" href="classOptimizer.html">Optimizer</a> identifier (e.g. "SGD", "Gradient_Descent"). </td></tr>
+    <tr><td class="paramname">optimizer_name</td><td><a class="el" href="classOptimizer.html" title="Abstract class base for optimizer/trainer for the torch PINN pipeline.">Optimizer</a> identifier (e.g. "SGD", "Gradient_Descent"). </td></tr>
     <tr><td class="paramname">lr</td><td>Learning rate. </td></tr>
     <tr><td class="paramname">loss</td><td>Loss reducer identifier (e.g. "MSE"). </td></tr>
     <tr><td class="paramname">verbose</td><td>Print compilation information. </td></tr>
@@ -287,7 +291,7 @@ template&lt;class NetT &gt; </div>
 <p>Compile the model with an optimizer that requires <code>n_fine</code>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">optimizer_name</td><td><a class="el" href="classOptimizer.html">Optimizer</a> identifier (currently "ParaFlowS"). </td></tr>
+    <tr><td class="paramname">optimizer_name</td><td><a class="el" href="classOptimizer.html" title="Abstract class base for optimizer/trainer for the torch PINN pipeline.">Optimizer</a> identifier (currently "ParaFlowS"). </td></tr>
     <tr><td class="paramname">lr</td><td>Learning rate. </td></tr>
     <tr><td class="paramname">n_fine</td><td>Number of fine steps per outer iteration. </td></tr>
     <tr><td class="paramname">loss</td><td>Loss reducer identifier (e.g. "MSE"). </td></tr>
