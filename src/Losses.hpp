@@ -22,6 +22,10 @@
 
 using tensor = torch::Tensor;
 
+/**
+ * @namespace losses
+ * @brief Residual-based loss functions for PINN training.
+ */
 namespace losses {
 /**
  * @brief Callable type for residual-based loss functions.

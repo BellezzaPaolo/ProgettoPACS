@@ -74,6 +74,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">Losses.hpp File Reference</div></div>
@@ -118,94 +119,32 @@ This graph shows which files directly or indirectly include this file:</div>
 </div>
 <p><a href="Losses_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacelosses" id="r_namespacelosses"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacelosses.html">losses</a></td></tr>
+<tr class="memdesc:namespacelosses"><td class="mdescLeft">&#160;</td><td class="mdescRight">Residual-based loss functions for PINN training. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a0e6fc41bf71a07870405237d1b9599a5" id="r_a0e6fc41bf71a07870405237d1b9599a5"><td class="memItemLeft" align="right" valign="top"><a id="a0e6fc41bf71a07870405237d1b9599a5" name="a0e6fc41bf71a07870405237d1b9599a5"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>tensor</b> = torch::Tensor</td></tr>
 <tr class="separator:a0e6fc41bf71a07870405237d1b9599a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bdaa801d2f93b4018bc5e413fccc765" id="r_a1bdaa801d2f93b4018bc5e413fccc765"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Losses_8hpp.html#a1bdaa801d2f93b4018bc5e413fccc765">losses::ResidualLossFn</a> = std::function&lt; tensor(const tensor &amp;r)&gt;</td></tr>
+<tr class="memitem:a1bdaa801d2f93b4018bc5e413fccc765" id="r_a1bdaa801d2f93b4018bc5e413fccc765"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacelosses.html#a1bdaa801d2f93b4018bc5e413fccc765">losses::ResidualLossFn</a> = std::function&lt; tensor(const tensor &amp;r)&gt;</td></tr>
 <tr class="memdesc:a1bdaa801d2f93b4018bc5e413fccc765"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callable type for residual-based loss functions.  <br /></td></tr>
 <tr class="separator:a1bdaa801d2f93b4018bc5e413fccc765"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a189a43f56366d6d56409283dddd18fe0" id="r_a189a43f56366d6d56409283dddd18fe0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="Losses_8hpp.html#a1bdaa801d2f93b4018bc5e413fccc765">ResidualLossFn</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="Losses_8hpp.html#a189a43f56366d6d56409283dddd18fe0">losses::get_loss</a> (const std::string &amp;identifier)</td></tr>
+<tr class="memitem:a189a43f56366d6d56409283dddd18fe0" id="r_a189a43f56366d6d56409283dddd18fe0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacelosses.html#a1bdaa801d2f93b4018bc5e413fccc765">ResidualLossFn</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacelosses.html#a189a43f56366d6d56409283dddd18fe0">losses::get_loss</a> (const std::string &amp;identifier)</td></tr>
 <tr class="memdesc:a189a43f56366d6d56409283dddd18fe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a residual-based loss functor by identifier.  <br /></td></tr>
 <tr class="separator:a189a43f56366d6d56409283dddd18fe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Small registry of residual-based loss functions. </p>
-<p>This header provides a single factory function, <a class="el" href="Losses_8hpp.html#a189a43f56366d6d56409283dddd18fe0" title="Get a residual-based loss functor by identifier.">losses::get_loss()</a>, which returns a callable computing a scalar loss from a residual tensor.</p>
+<p>This header provides a single factory function, <a class="el" href="namespacelosses.html#a189a43f56366d6d56409283dddd18fe0" title="Get a residual-based loss functor by identifier.">losses::get_loss()</a>, which returns a callable computing a scalar loss from a residual tensor.</p>
 <p>In this codebase, the input passed to the loss is assumed to already be the residual (i.e. an error signal). Therefore the returned functors operate on the residual directly and do not require a separate <code>y_true</code> tensor. </p>
-</div><h2 class="groupheader">Typedef Documentation</h2>
-<a id="a1bdaa801d2f93b4018bc5e413fccc765" name="a1bdaa801d2f93b4018bc5e413fccc765"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bdaa801d2f93b4018bc5e413fccc765">&#9670;&#160;</a></span>ResidualLossFn</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">using <a class="el" href="Losses_8hpp.html#a1bdaa801d2f93b4018bc5e413fccc765">losses::ResidualLossFn</a> = typedef std::function&lt;tensor(const tensor&amp; r)&gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Callable type for residual-based loss functions. </p>
-<p>The callable takes a residual tensor <code>r</code> and returns a scalar tensor loss. </p>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a189a43f56366d6d56409283dddd18fe0" name="a189a43f56366d6d56409283dddd18fe0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a189a43f56366d6d56409283dddd18fe0">&#9670;&#160;</a></span>get_loss()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">ResidualLossFn losses::get_loss </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>identifier</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Get a residual-based loss functor by identifier. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">identifier</td><td>Human-readable or short identifier of the loss.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A function <code>f(r)</code> that maps a residual tensor <code>r</code> to a scalar loss.</dd></dl>
-<dl class="exception"><dt>Exceptions</dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">std::runtime_error</td><td>If the identifier is not recognized.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section user"><dt>Supported identifiers</dt><dd><ul>
-<li>Mean squared error: <code>"mean squared error"</code>, <code>"MSE"</code>, <code>"mse"</code></li>
-<li>Mean absolute error: <code>"mean absolute error"</code>, <code>"MAE"</code>, <code>"mae"</code></li>
-</ul>
-</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The input to the returned functor is assumed to be the residual itself. This avoids allocating an extra zero tensor as would be required by APIs like <code>torch::mse_loss(y_pred, y_true)</code>. </dd></dl>
-<p>In this codebase the values passed here are already residuals/errors. We therefore implement the loss directly on the residual to avoid allocating an explicit zero target tensor (as APIs like <code>torch::mse_loss</code> would require).</p>
-<dl class="section note"><dt>Note</dt><dd>This is equivalent to <code>torch::mse_loss(r, zeros_like(r))</code> but avoids the extra allocation for the zero tensor.</dd></dl>
-
-</div>
-</div>
-</div><!-- contents -->
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8

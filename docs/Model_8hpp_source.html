@@ -137,7 +137,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        this-&gt;lr = lr;</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        loss_name = loss;</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        this-&gt;loss_fn = losses::get_loss(loss);</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        this-&gt;loss_fn = <a class="code hl_function" href="namespacelosses.html#a189a43f56366d6d56409283dddd18fe0">losses::get_loss</a>(loss);</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>        <span class="keywordflow">if</span> (optimizer_name == <span class="stringliteral">&quot;ParaFlowS&quot;</span>){</div>
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>            <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;Model::compile: ParaFlowS requires n_fine. Use compile(optimizer, lr, n_fine, ...)&quot;</span>);</div>
@@ -163,7 +163,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>        this-&gt;lr = lr;</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>        loss_name = loss;</div>
 <div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span> </div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>        this-&gt;loss_fn = losses::get_loss(loss);</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>        this-&gt;loss_fn = <a class="code hl_function" href="namespacelosses.html#a189a43f56366d6d56409283dddd18fe0">losses::get_loss</a>(loss);</div>
 <div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
 <div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>        <span class="keywordflow">if</span> (optimizer_name == <span class="stringliteral">&quot;ParaFlowS&quot;</span>) {</div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>            opt = std::make_shared&lt;ParaflowS&lt;NetT&gt;&gt;(data, net, this-&gt;lr, n_fine, this-&gt;loss_fn);</div>
@@ -253,6 +253,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclassModel_html_ac102412ae7a3948f93e9d8525d6e1eb8"><div class="ttname"><a href="classModel.html#ac102412ae7a3948f93e9d8525d6e1eb8">Model::plot_loss_history</a></div><div class="ttdeci">void plot_loss_history() const</div><div class="ttdoc">Plot training (and optionally test) loss history.</div><div class="ttdef"><b>Definition</b> Model.hpp:173</div></div>
 <div class="ttc" id="aclassModel_html_adc9fafc168e7ae96c17ed1c9728e60d8"><div class="ttname"><a href="classModel.html#adc9fafc168e7ae96c17ed1c9728e60d8">Model::Model</a></div><div class="ttdeci">Model(std::shared_ptr&lt; Pde &gt; data, std::shared_ptr&lt; NetT &gt; net)</div><div class="ttdoc">Construct a model.</div><div class="ttdef"><b>Definition</b> Model.hpp:74</div></div>
 <div class="ttc" id="aclassPde_html"><div class="ttname"><a href="classPde.html">Pde</a></div><div class="ttdoc">PDE + BC data container and batching utility.</div><div class="ttdef"><b>Definition</b> Pde.hpp:58</div></div>
+<div class="ttc" id="anamespacelosses_html_a189a43f56366d6d56409283dddd18fe0"><div class="ttname"><a href="namespacelosses.html#a189a43f56366d6d56409283dddd18fe0">losses::get_loss</a></div><div class="ttdeci">ResidualLossFn get_loss(const std::string &amp;identifier)</div><div class="ttdoc">Get a residual-based loss functor by identifier.</div><div class="ttdef"><b>Definition</b> Losses.hpp:55</div></div>
 <div class="ttc" id="astructResult_html"><div class="ttname"><a href="structResult.html">Result</a></div><div class="ttdoc">Training summary returned by optimizers.</div><div class="ttdef"><b>Definition</b> Optimizer.hpp:34</div></div>
 <div class="ttc" id="astructResult_html_a0ca76fb33a7a4bf6f5e52ecab443c3b1"><div class="ttname"><a href="structResult.html#a0ca76fb33a7a4bf6f5e52ecab443c3b1">Result::budget_used</a></div><div class="ttdeci">int budget_used</div><div class="ttdoc">Number of training samples consumed so far (budget accounting).</div><div class="ttdef"><b>Definition</b> Optimizer.hpp:36</div></div>
 <div class="ttc" id="astructResult_html_a2691004b9baba1bbed7a19f58d520079"><div class="ttname"><a href="structResult.html#a2691004b9baba1bbed7a19f58d520079">Result::batch_size</a></div><div class="ttdeci">int batch_size</div><div class="ttdoc">Batch size used during training (0 means full batch in this project).</div><div class="ttdef"><b>Definition</b> Optimizer.hpp:46</div></div>

@@ -158,7 +158,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno"><a class="line" href="classPde.html#ab11fea956255d83bb21e65ed1bb94fca">  131</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classPde.html#ab11fea956255d83bb21e65ed1bb94fca">has_test_set</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> num_test &gt; 0; }</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    </div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    std::vector&lt;tensor&gt; losses(</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    std::vector&lt;tensor&gt; <a class="code hl_namespace" href="namespacelosses.html">losses</a>(</div>
 <div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>        <span class="keyword">const</span> tensor&amp; inputs,</div>
 <div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>        <span class="keyword">const</span> tensor&amp; outputs,</div>
 <div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>        <span class="keyword">const</span> std::function&lt;<a class="code hl_typedef" href="Pde_8hpp.html#a0e6fc41bf71a07870405237d1b9599a5">tensor</a>(<span class="keyword">const</span> tensor&amp;)&gt;&amp; loss_fn</div>
@@ -185,6 +185,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclassPde_html_a13fe3a4b5147b584730716d6fd6a0a18"><div class="ttname"><a href="classPde.html#a13fe3a4b5147b584730716d6fd6a0a18">Pde::train_next_batch</a></div><div class="ttdeci">tensor &amp; train_next_batch(const int batch_size=0)</div><div class="ttdoc">Return the next training batch.</div><div class="ttdef"><b>Definition</b> Pde.cpp:314</div></div>
 <div class="ttc" id="aclassPde_html_ab11fea956255d83bb21e65ed1bb94fca"><div class="ttname"><a href="classPde.html#ab11fea956255d83bb21e65ed1bb94fca">Pde::has_test_set</a></div><div class="ttdeci">bool has_test_set() const</div><div class="ttdoc">Get the number of training points.</div><div class="ttdef"><b>Definition</b> Pde.hpp:131</div></div>
 <div class="ttc" id="aclassPde_html_af61de375568c04fc6ddc626ad04cad46"><div class="ttname"><a href="classPde.html#af61de375568c04fc6ddc626ad04cad46">Pde::get_test</a></div><div class="ttdeci">const tensor &amp; get_test() const</div><div class="ttdoc">Get the test set points.</div><div class="ttdef"><b>Definition</b> Pde.hpp:125</div></div>
+<div class="ttc" id="anamespacelosses_html"><div class="ttname"><a href="namespacelosses.html">losses</a></div><div class="ttdoc">Residual-based loss functions for PINN training.</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
