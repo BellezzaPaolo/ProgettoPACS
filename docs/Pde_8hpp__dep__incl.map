@@ -1,0 +1,16 @@
+<map id="src/pde/Pde.hpp" name="src/pde/Pde.hpp">
+<area shape="rect" id="Node000001" title="Dataset/geometry wrapper for PINNs (DeepXDE&#45;like)." alt="" coords="66,5,191,31"/>
+<area shape="rect" id="Node000002" href="$Model_8hpp.html" title="DeepXDE&#45;like Model wrapper for the C++/LibTorch PINN pipeline." alt="" coords="28,240,141,265"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,38,41,55,18,80,10,101,9,123,14,146,23,168,50,209,75,238,71,242,46,212,19,171,9,148,4,124,4,100,13,77,38,51,69,34"/>
+<area shape="rect" id="Node000003" href="$Optimizer_8hpp.html" title="Base optimizer interface and training result container." alt="" coords="27,79,230,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,44,131,79,126,79,126,44"/>
+<area shape="rect" id="Node000006" href="$Pde_8cpp.html" title="Implementation of the Pde data container." alt="" coords="255,79,379,104"/>
+<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="173,33,287,76,285,81,171,38"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="93,113,70,130,53,153,48,176,54,199,65,221,77,238,73,241,60,224,49,201,43,176,48,151,66,127,90,109"/>
+<area shape="rect" id="Node000004" href="$Gradient__Descent_8hpp.html" title="SGD&#45;based optimizer/trainer for the PINN model." alt="" coords="63,152,229,192"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="137,117,145,151,139,152,132,118"/>
+<area shape="rect" id="Node000005" href="$ParaflowS_8hpp.html" title="ParaFlowS optimizer/trainer (coarse/fine + correction) for PINNs." alt="" coords="254,159,457,185"/>
+<area shape="poly" id="edge6_Node000003_Node000005" title=" " alt="" coords="175,106,323,157,322,162,174,111"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="125,205,96,241,92,238,121,201"/>
+<area shape="poly" id="edge7_Node000005_Node000002" title=" " alt="" coords="304,191,125,243,123,237,302,186"/>
+</map>

@@ -1,0 +1,24 @@
+<map id="src/boundary_condition/Boundary_Condition.hpp" name="src/boundary_condition/Boundary_Condition.hpp">
+<area shape="rect" id="Node000001" title="Abstract boundary&#45;condition interface (DeepXDE&#45;like) for PINNs." alt="" coords="207,5,393,45"/>
+<area shape="rect" id="Node000002" href="$Boundary__Condition_8cpp.html" title="Implementation of generic boundary&#45;point selection." alt="" coords="5,93,189,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="244,53,143,96,141,91,242,48"/>
+<area shape="rect" id="Node000003" href="$Dirichlet__BC_8hpp.html" title="Dirichlet boundary condition implementation." alt="" coords="213,93,387,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="303,59,303,93,297,93,297,59"/>
+<area shape="rect" id="Node000005" href="$Pde_8hpp.html" title="Dataset/geometry wrapper for PINNs (DeepXDE&#45;like)." alt="" coords="455,101,580,126"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="361,48,489,98,487,103,359,53"/>
+<area shape="rect" id="Node000004" href="$Dirichlet__BC_8cpp.html" title="Implementation of the Dirichlet boundary condition." alt="" coords="191,181,364,221"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="294,147,285,182,280,180,289,146"/>
+<area shape="rect" id="Node000006" href="$Model_8hpp.html" title="DeepXDE&#45;like Model wrapper for the C++/LibTorch PINN pipeline." alt="" coords="455,357,569,383"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="480,135,451,155,429,183,422,207,422,232,429,257,441,281,472,325,501,355,497,359,468,328,437,284,424,259,417,233,416,206,424,180,447,151,477,130"/>
+<area shape="rect" id="Node000007" href="$Optimizer_8hpp.html" title="Base optimizer interface and training result container." alt="" coords="439,189,641,214"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="526,139,539,187,534,189,521,140"/>
+<area shape="rect" id="Node000010" href="$Pde_8cpp.html" title="Implementation of the Pde data container." alt="" coords="666,189,790,214"/>
+<area shape="poly" id="edge12_Node000005_Node000010" title=" " alt="" coords="559,129,701,186,699,191,557,134"/>
+<area shape="poly" id="edge7_Node000007_Node000006" title=" " alt="" coords="515,225,495,245,480,270,477,293,482,317,505,356,500,358,477,319,471,294,475,268,491,242,511,221"/>
+<area shape="rect" id="Node000008" href="$Gradient__Descent_8hpp.html" title="SGD&#45;based optimizer/trainer for the PINN model." alt="" coords="490,269,657,309"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="552,226,568,268,563,270,547,228"/>
+<area shape="rect" id="Node000009" href="$ParaflowS_8hpp.html" title="ParaFlowS optimizer/trainer (coarse/fine + correction) for PINNs." alt="" coords="681,277,884,302"/>
+<area shape="poly" id="edge10_Node000007_Node000009" title=" " alt="" coords="586,216,751,274,749,279,585,221"/>
+<area shape="poly" id="edge9_Node000008_Node000006" title=" " alt="" coords="552,322,523,359,519,355,548,319"/>
+<area shape="poly" id="edge11_Node000009_Node000006" title=" " alt="" coords="731,308,552,360,551,355,730,303"/>
+</map>

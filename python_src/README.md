@@ -39,3 +39,9 @@ In particular:
 - `callbacks.py` adds a budget-based callback to compare the ParaFlow optimizer with existing deepXDE optimizers
 - `pde.py` modifies the `train_next_batch()` method in the PDE class to enable batch training
 - The other 3 files implement test cases. Please read them carefully before running, as some tests require several hours due to training multiple neural networks.
+
+# Tests
+The 3 files to test the code should be executed after the installation of DeepXDE. Even if 2 of them doesn't use DeepXDE, import from that folder the callback and the ParaFlowS classes so if you don't want to install DeepXDE adapt the imports. The 3 files contain:
+- `Higham_test.py`: This test implements a classification problem of 10 points in the domain $[0,1]^2$. This is taken from the example at this [paper](https://doi.org/10.1137/18M1165748)
+- `Smorzato_test.py`:
+- `Poisson_Lshape.py`:

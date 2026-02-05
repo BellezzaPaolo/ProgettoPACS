@@ -1,0 +1,5 @@
+<map id="src/optimizer/ParaflowS.hpp" name="src/optimizer/ParaflowS.hpp">
+<area shape="rect" id="Node000001" title="ParaFlowS optimizer/trainer (coarse/fine + correction) for PINNs." alt="" coords="5,5,208,31"/>
+<area shape="rect" id="Node000002" href="$Model_8hpp.html" title="DeepXDE&#45;like Model wrapper for the C++/LibTorch PINN pipeline." alt="" coords="50,79,163,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,44,109,79,104,79,104,44"/>
+</map>

@@ -13,7 +13,6 @@ deepxde/
 __pycache__/
 python_src/results/
 results/*
-html/
 latex/
 
 python_src/Copy_files_to_track.sh
