@@ -9,13 +9,12 @@ The key idea is:
 - keep the training pipeline close to the DeepXDE API style (`Pde` + `Model` + optimizers returning a `Result`) in order to be easily and very intuitive to extend.
 
 This project currently builds two executables:
-- [src/PoissonLshape.cpp](PoissonLshape.cpp): example presented in the paper [DeepXDE: A Deep Learning Library for Solving Differential Equations](https://doi.org/10.1137/19M1274067), section 4.1.COnsider 2D Poisson problem over the domain $\Omega = [-1,1]^2 \setminus [0,1]^2$:
-$$
-\begin{cases}
--\Delta u = 1 & \text{in } \Omega,\\
-u = 0 & \text{on } \partial\Omega,
-\end{cases}
-$$
+- [src/PoissonLshape.cpp](PoissonLshape.cpp): example presented in the paper [DeepXDE: A Deep Learning Library for Solving Differential Equations](https://doi.org/10.1137/19M1274067), section 4.1.Consider 2D Poisson problem over The domain is Ω = [-1,1]² \ [0,1]².
+ 
+ −Δu = 1 in Ω
+ 
+ u = 0 on ∂Ω
+
 - [src/parameter_test.cpp](parameter_test.cpp): experiment to test the velocity of convergence with many settings of GD and ParaFlowS, keeping as test case the above problem. This file runs multiple training of a PINN with different hyperparameters. This file takes a lot to execute, to reduce the time comment the last element of the budgets vector (line 68).
 
 ## Contents
