@@ -1,0 +1,5 @@
+<map id="Losses.hpp" name="Losses.hpp">
+<area shape="rect" id="Node000001" title="Small registry of residual&#45;based loss functions." alt="" coords="5,5,100,31"/>
+<area shape="rect" id="Node000002" href="$Model_8hpp.html" title="DeepXDE&#45;like Model wrapper for the C++/LibTorch PINN pipeline." alt="" coords="7,79,98,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="55,44,55,79,50,79,50,44"/>
+</map>

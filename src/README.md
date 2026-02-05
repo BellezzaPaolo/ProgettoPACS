@@ -16,11 +16,11 @@ $$
 u = 0 & \text{on } \partial\Omega,
 \end{cases}
 $$
-- [src/test.cpp](test.cpp): experiment to test the velocity of convergence with many settings of GD and ParaFlowS, keeping as test case the above problem.
+- [src/parameter_test.cpp](parameter_test.cpp): experiment to test the velocity of convergence with many settings of GD and ParaFlowS, keeping as test case the above problem. This file runs multiple training of a PINN with different hyperparameters. This file takes a lot to execute, to reduce the time comment the last element of the budgets vector (line 68).
 
 ## Contents
 
-- [src/test.cpp](test.cpp): experiment tester (SGD + ParaFlowS)
+- [src/parameter_test.cpp](parameter_test.cpp): experiment tester (SGD + ParaFlowS)
 - [src/PoissonLshape.cpp](PoissonLshape.cpp): single example
 - [src/Pde.hpp](Pde.hpp), [src/Pde.cpp](Pde.cpp): dataset/geometry wrapper and handles also batching and loss assembly
 - [src/Model.hpp](Model.hpp): DeepXDE-like facade (`compile`, `train`, `save_data`, `plot_loss_history`)
@@ -95,14 +95,14 @@ make run_poissonlshape
 
 ## What the executables do
 
-The current entry points are [src/test.cpp](test.cpp) and [src/PoissonLshape.cpp](PoissonLshape.cpp):
+The current entry points are [src/parameter_test.cpp](parameter_test.cpp) and [src/PoissonLshape.cpp](PoissonLshape.cpp):
 
 - Initializes Python and sets `DDE_BACKEND=pytorch`
 - Imports DeepXDE and constructs a polygon geometry
 - Builds a PINN (`FNN<Tanh>`) in float32
 - Defines the PDE residual using autograd Laplacian
 
-`test.cpp` runs a sweep over learning rates and budgets for:
+`parameter_test.cpp` runs a sweep over learning rates and budgets for:
 	- SGD (called `SGD` / `Gradient_Descent` in the code)
 	- ParaFlowS with multiple `n_fine`
 - Appends one CSV row per training run via `Model::save_data(...)`

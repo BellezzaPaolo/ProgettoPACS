@@ -1,0 +1,11 @@
+<map id="optimizer/Optimizer.hpp" name="optimizer/Optimizer.hpp">
+<area shape="rect" id="Node000001" title="Base optimizer interface and training result container." alt="" coords="6,5,185,31"/>
+<area shape="rect" id="Node000002" href="$Model_8hpp.html" title="DeepXDE&#45;like Model wrapper for the C++/LibTorch PINN pipeline." alt="" coords="50,167,141,192"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="57,39,32,57,14,80,8,99,14,117,24,133,38,145,69,164,66,169,35,150,20,136,9,120,3,99,9,77,29,53,54,35"/>
+<area shape="rect" id="Node000003" href="$Gradient__Descent_8hpp.html" title="SGD&#45;based optimizer/trainer for the PINN model." alt="" coords="23,79,167,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="98,44,98,79,93,79,93,44"/>
+<area shape="rect" id="Node000004" href="$ParaflowS_8hpp.html" title="ParaFlowS optimizer/trainer (coarse/fine + correction) for PINNs." alt="" coords="191,86,370,111"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="136,33,255,84,253,88,134,38"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="98,132,98,166,93,166,93,132"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="242,119,123,169,121,164,240,114"/>
+</map>

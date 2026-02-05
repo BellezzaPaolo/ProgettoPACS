@@ -1,0 +1,5 @@
+<map id="optimizer/Gradient_Descent.hpp" name="optimizer/Gradient_Descent.hpp">
+<area shape="rect" id="Node000001" title="SGD&#45;based optimizer/trainer for the PINN model." alt="" coords="5,5,149,45"/>
+<area shape="rect" id="Node000002" href="$Model_8hpp.html" title="DeepXDE&#45;like Model wrapper for the C++/LibTorch PINN pipeline." alt="" coords="32,93,123,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,59,80,93,75,93,75,59"/>
+</map>

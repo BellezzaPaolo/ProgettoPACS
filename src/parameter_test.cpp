@@ -66,7 +66,7 @@ int main(){
     const std::vector<int> n_fine = {10, 50, 100, 500, 1000, 2000};
     const std::vector<double> lr = {0.1, 0.01, 0.001, 0.0001};
     const std::vector<int> budgets = {int(1e5),int(1e6),int(1e7),int(1e8)};
-    const int batch_size = 0;
+    const int batch_size = 1448/2;
 
     /**
      * @brief Write results in the same CSV schema used by the Python experiments.

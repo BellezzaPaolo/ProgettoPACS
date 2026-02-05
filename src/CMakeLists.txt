@@ -46,7 +46,7 @@ function(add_pacs_executable target_name entry_source)
 endfunction()
 
 # --- Executables ---
-add_pacs_executable(test ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp)
+add_pacs_executable(test ${CMAKE_CURRENT_SOURCE_DIR}/parameter_test.cpp)
 add_pacs_executable(poisson_lshape ${CMAKE_CURRENT_SOURCE_DIR}/PoissonLshape.cpp)
 
 # Torch provides recommended compiler flags

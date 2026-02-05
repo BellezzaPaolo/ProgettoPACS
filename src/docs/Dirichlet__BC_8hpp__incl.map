@@ -1,0 +1,14 @@
+<map id="boundary_condition/Dirichlet_BC.hpp" name="boundary_condition/Dirichlet_BC.hpp">
+<area shape="rect" id="Node000001" title="Dirichlet boundary condition implementation." alt="" coords="262,5,413,45"/>
+<area shape="rect" id="Node000002" href="$Boundary__Condition_8hpp.html" title="Abstract boundary&#45;condition interface (DeepXDE&#45;like) for PINNs." alt="" coords="183,93,364,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="324,47,294,84,290,81,320,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="350,167,493,192"/>
+<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="351,44,378,92,411,153,407,156,374,95,346,47"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,167,85,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="237,121,96,165,95,160,236,116"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="110,167,197,192"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="255,121,186,162,184,157,253,116"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="298,116,386,158,384,163,296,121"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="221,167,325,192"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="276,119,276,153,271,153,271,119"/>
+</map>
