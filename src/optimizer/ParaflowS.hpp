@@ -223,13 +223,56 @@ public:
     }
 
     /**
-     * @brief Train using the ParaFlowS scheme.
+     * @brief Train the network using the ParaFlowS parallel-in-time optimization scheme.
      *
-     * @param batch_size Batch size; 0 means full batch.
-     * @param budget Maximum number of samples to consume (0 disables budget stop).
-     * @param max_iterations Maximum outer iterations.
-     * @param verbose Enable progress logging and loss history tracking.
-     * @return Result Training summary.
+     * @param batch_size Number of training samples per fine solver step. Use 0 for full-batch training.
+     * @param budget Maximum number of samples to process (stopping criterion). Use 0 to disable budget-based stopping.
+     * @param max_iterations Maximum number of outer ParaFlowS iterations.
+     * @param verbose If true, print training progress and record loss history.
+     *
+     * @return Result structure containing:
+     *         - `final_loss`: Loss on the full training set after training
+     *         - `total_time_ms`: Total training time in milliseconds
+     *         - `budget_used`: Actual number of samples consumed
+     *         - `epoch`: Number of outer iterations completed
+     *         - `batch_size`: Effective batch size used
+     *         - `lr`: Fine learning rate
+     *         - `n_fine`: Number of fine steps per iteration
+     *
+     * @details
+     * **Algorithm Overview:**
+     *
+     * ParaFlowS is a parareal-inspired optimization scheme that alternates between:
+     * 1. **Coarse solver**: Computes a large-step candidate using full-batch gradient descent
+     *    with learning rate `lr_coarse = lr_fine * n_fine`. The candidate parameters are
+     *    stored in the internal buffer `bff1` without modifying the live network.
+     *
+     * 2. **Fine solver**: Performs `n_fine` standard SGD steps with learning rate `lr_fine`
+     *    on the live network parameters using mini-batches.
+     *
+     * 3. **Correction loop**: Combines coarse and fine solutions via the correction term
+     *    `correction = params_fine - bff1`. Up to `n_coarse` iterations apply the formula:
+     *    \f[
+     *       \theta^{(k+1)} = \theta_{\text{coarse}}^{(k+1)} + \text{correction}^{(k)}
+     *    \f]
+     *    The loop enforces monotonic decrease: if a coarse step increases the loss compared
+     *    to the fine solution, parameters are reverted to the last accepted state and the
+     *    correction loop terminates.
+     *
+     * **Implementation Details:**
+     * - All input batches are created as leaf tensors with `requires_grad=true` to enable
+     *   autograd-based computation of PDE differential operators.
+     * - The GIL (Global Interpreter Lock) is released during training since the entire
+     *   computation uses C++/LibTorch without accessing Python objects.
+     * - Training can be stopped early when the sample budget is exhausted.
+     * - If `verbose=true` and a test set is available (`use_test=true`), test loss is
+     *   computed and logged at each iteration.
+     *
+     * @note The coarse solver always uses full-batch mode (batch_size=0) regardless of
+     *       the `batch_size` parameter, which only affects the fine solver steps.
+     *
+     * @warning This function modifies the network parameters in-place. The final network
+     *          state corresponds to the last accepted parameters from the correction loop.
      */
     Result train(int batch_size, int budget, int max_iterations, bool verbose) override {
         if (verbose){
